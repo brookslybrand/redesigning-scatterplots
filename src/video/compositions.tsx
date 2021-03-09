@@ -2,6 +2,9 @@ import { Composition } from 'remotion'
 import { GlobalStyles } from 'twin.macro'
 import RedesigningScatterPlots from './redesigning-scatterplots'
 
+// add the font-faces
+import './styles/globals.css'
+
 export default function Compositions() {
   return (
     <>
