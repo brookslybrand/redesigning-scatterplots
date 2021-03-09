@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test": "jest --watch",
-    "analyze": "cross-env ANALYZE=true npm run build"
+    "analyze": "cross-env ANALYZE=true npm run build",
+    "remotion": "remotion preview src/video/index.tsx",
+    "remotion:build": "remotion render src/video/index.tsx redesigning-scatterplots src/video/redesigning-scatterplots.mp4 --overwrite"
   },
   "husky": {
     "hooks": {
@@ -17,10 +19,15 @@
   },
   "dependencies": {
     "@emotion/react": "^11.1.5",
+    "@remotion/bundler": "^1.5.3",
+    "@remotion/cli": "^1.5.3",
+    "@remotion/eslint-config": "^1.5.0",
+    "@remotion/renderer": "^1.5.3",
     "clsx": "^1.1.1",
     "next": "^10.0.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "remotion": "^1.5.3",
     "tailwindcss": "^2.0.3",
     "twin.macro": "^2.2.3"
   },
