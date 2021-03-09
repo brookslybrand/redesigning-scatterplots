@@ -1,0 +1,11 @@
+.eslintignore
+.eslintrc
+.prettierignore
+.prettierrc
+
+public/
+.next/
+styles/
+package-lock.json
+
+node_modules/

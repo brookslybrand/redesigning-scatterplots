@@ -1,0 +1,5 @@
+public/
+.next/
+node_modules/
+.snapshots/
+*.min.js

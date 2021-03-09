@@ -1,0 +1,210 @@
+/* @font-face and Poppin's woff2 files generated from https://google-webfonts-helper.herokuapp.com/fonts */
+/* Poppins is not a variable font */
+
+/* poppins-100 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-100.woff2') format('woff2');
+}
+/* poppins-100-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-100italic.woff2') format('woff2');
+}
+/* poppins-200 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-200.woff2') format('woff2');
+}
+/* poppins-200-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 200;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-200italic.woff2') format('woff2');
+}
+/* poppins-300 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-300.woff2') format('woff2');
+}
+/* poppins-300-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-300italic.woff2') format('woff2');
+}
+/* poppins-regular - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-regular.woff2') format('woff2');
+}
+/* poppins-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-italic.woff2') format('woff2');
+}
+/* poppins-500 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-500.woff2') format('woff2');
+}
+/* poppins-500-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-500italic.woff2') format('woff2');
+}
+/* poppins-600 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-600.woff2') format('woff2');
+}
+/* poppins-600-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-600italic.woff2') format('woff2');
+}
+/* poppins-700 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-700.woff2') format('woff2');
+}
+/* poppins-700-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-700italic.woff2') format('woff2');
+}
+/* poppins-800 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-800.woff2') format('woff2');
+}
+/* poppins-800-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 800;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-800italic.woff2') format('woff2');
+}
+/* poppins-900 - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-900.woff2') format('woff2');
+}
+/* poppins-900-italic - latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: local(''),
+       url('/fonts/Poppins/poppins-v15-latin-900italic.woff2') format('woff2');
+}
+
+/*
+  1. Download variable font ttf file from Google https://fonts.google.com/specimen/Work+Sans?query=work+sa&preview.text_type=custom
+  2. Use glyphhanger to subset the variable file https://www.npmjs.com/package/glyphhanger
+  3. Because I can't get brotli to work, I have to take the subset ttf file produced by glyphhanger
+    and compress it to a woff2 with https://github.com/google/woff2, which I was only able to get to work with `brew install woff2`
+*/
+/* work-sans-variable - subset */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: local(''),
+      url('/fonts/Work_Sans/work-sans-variableFont_wght-subset.woff2') format('woff2 supports variations'),
+      url('/fonts/Work_Sans/work-sans-variableFont_wght-subset.woff2') format('woff2-variations');
+
+}
+/* work-sans-italic-variable - subset */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: local(''),
+      url('/fonts/Work_Sans/work-sans-italic-variableFont_wght-subset.woff2') format('woff2 supports variations'),
+      url('/fonts/Work_Sans/work-sans-italic-variableFont_wght-subset.woff2') format('woff2-variations');
+
+}
+/* Icons built from variable font  */
+/* Documentation for how to use the icon font Anicon https://typogram.github.io/Anicons/use.html */
+@font-face {
+  font-family: 'Anicons Regular';
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: local(''),
+      url('/fonts/Anicons/AniconsGX.woff2');
+}
+
+/*
+All modern browsers support variable fonts, so for now I'm not adding a static font alternative for Work Sans.
+https://caniuse.com/variable-fonts
+*/
+
