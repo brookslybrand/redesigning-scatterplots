@@ -12,7 +12,7 @@ export default function Compositions() {
       <Composition
         id="redesigning-scatterplots"
         component={RedesigningScatterPlots}
-        durationInFrames={200}
+        durationInFrames={550}
         fps={30}
         width={1920}
         height={1080}

@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import tw, { css } from 'twin.macro'
+import tw, { css, theme } from 'twin.macro'
 import {
   useCurrentFrame,
   interpolate,
@@ -23,14 +23,25 @@ export default function RedesigningScatterPlots() {
           `,
         ]}
       >
-        <Sequence
-          from={0}
-          durationInFrames={200}
-          name="paragraph 1"
-          layout="none"
-        >
-          <Paragraph>{text}</Paragraph>
-        </Sequence>
+        <div tw="relative">
+          <Sequence
+            from={0}
+            durationInFrames={200}
+            name="paragraph 1"
+            layout="none"
+          >
+            <Paragraph>{text}</Paragraph>
+            {/* <Paragraph2 fadeInDuration={300}>{text}</Paragraph2> */}
+          </Sequence>
+          <Sequence
+            from={180}
+            durationInFrames={Infinity}
+            name="paragraph 2"
+            layout="none"
+          >
+            <Paragraph>{text}</Paragraph>
+          </Sequence>
+        </div>
       </div>
       {/* <MyVideo /> */}
     </div>
@@ -62,10 +73,31 @@ type ParagraphProps = {
   children: React.ReactNode
 }
 function Paragraph({
-  transformDuration = 40,
+  transformDuration = 50,
   fadeDuration = transformDuration + 10,
   children,
 }: ParagraphProps) {
+  const { y, opacity } = useParagraphAttributes(transformDuration, fadeDuration)
+
+  return (
+    <p
+      css={[
+        tw`absolute text-2xl font-light text-gray-900 font-body`,
+        css`
+          transform: translateY(${y}%);
+          opacity: ${opacity};
+        `,
+      ]}
+    >
+      {children}
+    </p>
+  )
+}
+
+function useParagraphAttributes(
+  transformDuration: number,
+  fadeDuration: number
+) {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig() // paragraph exists as long as the duration
   const transformOutStart = durationInFrames - transformDuration
@@ -77,86 +109,28 @@ function Paragraph({
     `)
   }
 
-  const y =
-    frame < transformOutStart
-      ? interpolate(frame, [0, transformDuration], [25, 0], {
-          easing: ease,
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        })
-      : interpolate(
-          frame,
-          [transformOutStart, transformOutStart + transformDuration],
-          [0, 25],
-          {
-            easing: ease,
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }
-        )
+  const interpolateConfig = {
+    easing: ease,
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  } as const
+
+  const y = interpolate(
+    frame,
+    [0, transformDuration],
+    [100, 0],
+    interpolateConfig
+  )
 
   const opacity =
     frame < fadeOutStart
-      ? interpolate(frame, [0, fadeDuration], [0, 1], {
-          easing: ease,
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        })
+      ? interpolate(frame, [0, fadeDuration], [0, 1], interpolateConfig)
       : interpolate(
           frame,
           [fadeOutStart, fadeOutStart + fadeDuration],
           [1, 0],
-          {
-            easing: ease,
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }
+          interpolateConfig
         )
 
-  return (
-    <p
-      css={[
-        tw`text-2xl font-light text-gray-900 font-body`,
-        css`
-          transform: translateY(${y}vh);
-          opacity: ${opacity};
-        `,
-      ]}
-    >
-      {children}
-    </p>
-  )
-}
-
-const SubComponent = () => {
-  const frame = useCurrentFrame() // 15
-
-  return (
-    <Sequence
-      from={10}
-      durationInFrames={Infinity}
-      name="MySubSequence"
-      layout="none"
-    >
-      <div>sequence frame: {frame}</div>
-    </Sequence>
-  )
-}
-
-const MyVideo = () => {
-  const frame = useCurrentFrame() // 25
-
-  return (
-    <div>
-      <Sequence
-        from={10}
-        durationInFrames={100}
-        name="MySequence"
-        layout="none"
-      >
-        <div>global frame: {frame}</div>
-        <SubComponent />
-      </Sequence>
-    </div>
-  )
+  return { y, opacity }
 }
