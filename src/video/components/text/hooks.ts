@@ -1,10 +1,10 @@
 import { useCurrentFrame, interpolate, Easing, useVideoConfig } from 'remotion'
 
-export { useParagraphAttributes }
+export { useTextTransitionAttributes }
 
 const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
 
-function useParagraphAttributes(
+function useTextTransitionAttributes(
   transformDuration: number,
   fadeDuration: number
 ) {

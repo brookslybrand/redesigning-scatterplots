@@ -2,7 +2,7 @@
 import tw, { css } from 'twin.macro'
 
 import CustomSequence from '../custom-sequence'
-import { useParagraphAttributes } from './hooks'
+import { useTextTransitionAttributes } from './hooks'
 
 export default function DataInkRatioFormula() {
   return (
@@ -36,7 +36,7 @@ function DataInkRatioFormulaGrid({
   fadeDuration = 60,
   children,
 }: DataInkRatioFormulaGridProps) {
-  const { opacity } = useParagraphAttributes(0, fadeDuration)
+  const { opacity } = useTextTransitionAttributes(0, fadeDuration)
 
   return (
     <span
@@ -61,7 +61,7 @@ function DataInkRatioExplanation({
   fadeDuration = 60,
   ...props
 }: DataInkRatioExplanationProps) {
-  const { opacity } = useParagraphAttributes(0, fadeDuration)
+  const { opacity } = useTextTransitionAttributes(0, fadeDuration)
 
   return (
     <>
