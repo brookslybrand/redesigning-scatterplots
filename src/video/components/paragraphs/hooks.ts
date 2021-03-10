@@ -28,7 +28,7 @@ function useParagraphAttributes(
   const y = interpolate(
     frame,
     [0, transformDuration],
-    [100, 0],
+    [200, 0], // pixels
     interpolateConfig
   )
 

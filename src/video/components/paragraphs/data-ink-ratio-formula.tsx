@@ -9,7 +9,7 @@ export default function DataInkRatioFormula() {
     <DataInkRatioFormulaGrid>
       <DataInkRatioExplanation tw="flex flex-col items-center" fadeDuration={0}>
         <span>data-ink</span>
-        <hr tw="border-t-2 border-gray-red-400 w-full" />
+        <span tw="border-t-2 border-gray-red-400 w-full" />
         <span>total ink used to print the graphic</span>
       </DataInkRatioExplanation>
       <CustomSequence from={60} name="formula 2">

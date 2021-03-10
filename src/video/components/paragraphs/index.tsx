@@ -4,18 +4,44 @@ import tw, { css } from 'twin.macro'
 import CustomSequence from '../custom-sequence'
 import DataInkRatioFormula from './data-ink-ratio-formula'
 import { useParagraphAttributes } from './hooks'
+import paragraphs from '../../data/paragraphs'
+
+// calculate when the paragraphs start and how long they will be
+const overlap = 30
+const paragraphSequenceProps = paragraphs.map((text, idx) => {
+  const durationInFrames = 400
+  const from = durationInFrames * idx - overlap * idx
+  return {
+    text,
+    from,
+    durationInFrames,
+    name: `paragraph ${idx + 1}`,
+  }
+})
+
+export const totalDuration = paragraphSequenceProps.reduce(
+  (totalDuration, { from, durationInFrames }) =>
+    Math.max(totalDuration, from + durationInFrames),
+  0
+)
 
 export default function Paragraphs() {
   return (
     <div tw="relative">
-      <CustomSequence from={0} durationInFrames={400} name="paragraph 1">
-        <Text>
-          {text}
-          <CustomSequence from={120} name="formula 1">
-            <DataInkRatioFormula />
+      {paragraphSequenceProps.map(({ text, ...props }, idx) => {
+        return (
+          <CustomSequence key={props.name} {...props}>
+            <Text>
+              {text}
+              {idx === 0 ? (
+                <CustomSequence from={120} name="data ink ratio formula">
+                  <DataInkRatioFormula />
+                </CustomSequence>
+              ) : null}
+            </Text>
           </CustomSequence>
-        </Text>
-      </CustomSequence>
+        )
+      })}
     </div>
   )
 }
@@ -39,7 +65,7 @@ function Text({
       css={[
         tw`absolute text-2xl font-light text-gray-900 font-body`,
         css`
-          transform: translateY(${y}%);
+          transform: translateY(${y}px);
           opacity: ${opacity};
         `,
       ]}
@@ -48,6 +74,3 @@ function Text({
     </p>
   )
 }
-
-const text =
-  'A large share of ink on a graphic should present data-information, the ink changing as the data change. *Data-ink* is the non-erasable core of a graphic, the non-redundant ink arranged in response to variation in the numbers represented. Then,'

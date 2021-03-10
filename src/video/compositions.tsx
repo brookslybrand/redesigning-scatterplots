@@ -1,6 +1,8 @@
 import { Composition } from 'remotion'
 import { GlobalStyles } from 'twin.macro'
-import RedesigningScatterPlots from './redesigning-scatterplots'
+import RedesigningScatterPlots, {
+  totalDuration,
+} from './redesigning-scatterplots'
 
 // add the font-faces
 import './styles/globals.css'
@@ -12,7 +14,7 @@ export default function Compositions() {
       <Composition
         id="redesigning-scatterplots"
         component={RedesigningScatterPlots}
-        durationInFrames={550}
+        durationInFrames={totalDuration}
         fps={30}
         width={1920}
         height={1080}

@@ -1,10 +1,14 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
 
-import Paragraphs from './components/paragraphs'
+import Paragraphs, {
+  totalDuration as paragraphsTotalDuration,
+} from './components/paragraphs'
 
 const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
 const plotWidth = 700
+
+export const totalDuration = paragraphsTotalDuration
 
 export default function RedesigningScatterPlots() {
   return (

@@ -1,6 +1,7 @@
 import { Sequence } from 'remotion'
 
 type CustomSequenceProps = {
+  key?: React.Key
   children: React.ReactNode
   from: number
   durationInFrames?: number
