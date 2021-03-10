@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import tw, { css, theme } from 'twin.macro'
+import tw, { css } from 'twin.macro'
 import {
   useCurrentFrame,
   interpolate,
@@ -9,14 +9,14 @@ import {
 } from 'remotion'
 
 const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
-const plotWidth = 550
+const plotWidth = 700
 
 export default function RedesigningScatterPlots() {
   return (
-    <div tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
+    <article tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
       <PlotPlaceholder />
 
-      <div
+      <section
         css={[
           css`
             width: ${plotWidth}px;
@@ -24,27 +24,18 @@ export default function RedesigningScatterPlots() {
         ]}
       >
         <div tw="relative">
-          <Sequence
-            from={0}
-            durationInFrames={200}
-            name="paragraph 1"
-            layout="none"
-          >
-            <Paragraph>{text}</Paragraph>
-            {/* <Paragraph2 fadeInDuration={300}>{text}</Paragraph2> */}
-          </Sequence>
-          <Sequence
-            from={180}
-            durationInFrames={Infinity}
-            name="paragraph 2"
-            layout="none"
-          >
-            <Paragraph>{text}</Paragraph>
-          </Sequence>
+          <CustomSequence from={0} durationInFrames={400} name="paragraph 1">
+            <Paragraph>
+              {text}
+
+              <CustomSequence from={120} name="formula 1">
+                <DataInkRatio />
+              </CustomSequence>
+            </Paragraph>
+          </CustomSequence>
         </div>
-      </div>
-      {/* <MyVideo /> */}
-    </div>
+      </section>
+    </article>
   )
 }
 
@@ -59,6 +50,30 @@ function PlotPlaceholder() {
         `,
       ]}
     />
+  )
+}
+
+function DataInkRatio() {
+  return (
+    <DataInkRatioFormulaGrid>
+      <DataInkRatioExplanation tw="flex flex-col items-center" fadeDuration={0}>
+        <span>data-ink</span>
+        <hr tw="border-t-2 border-gray-red-400 w-full" />
+        <span>total ink used to print the graphic</span>
+      </DataInkRatioExplanation>
+      <CustomSequence from={60} name="formula 2">
+        <DataInkRatioExplanation tw="flex flex-col items-center">
+          proportion of graphic's ink devoted to the non-redundant display of
+          data-information
+        </DataInkRatioExplanation>
+      </CustomSequence>
+      <CustomSequence from={120} name="formula 3">
+        <DataInkRatioExplanation tw="flex flex-col items-center">
+          1.0 - proportion of a graphic that can be erased without loss of
+          data-information.
+        </DataInkRatioExplanation>
+      </CustomSequence>
+    </DataInkRatioFormulaGrid>
   )
 }
 
@@ -91,6 +106,66 @@ function Paragraph({
     >
       {children}
     </p>
+  )
+}
+
+type DataInkRatioFormulaGridProps = {
+  fadeDuration?: number
+  children?: React.ReactNode
+}
+function DataInkRatioFormulaGrid({
+  fadeDuration = 60,
+  children,
+}: DataInkRatioFormulaGridProps) {
+  const { opacity } = useParagraphAttributes(0, fadeDuration)
+
+  return (
+    <span
+      css={[
+        tw`grid items-center gap-x-4 gap-y-4`,
+        css`
+          opacity: ${opacity};
+          grid-template-columns: min-content min-content auto;
+        `,
+      ]}
+    >
+      <span tw="whitespace-nowrap">Data-ink ratio</span>
+      {children}
+    </span>
+  )
+}
+
+type DataInkRatioExplanationProps = {
+  fadeDuration?: number
+} & React.ComponentPropsWithoutRef<'span'>
+function DataInkRatioExplanation({
+  fadeDuration = 60,
+  ...props
+}: DataInkRatioExplanationProps) {
+  const { opacity } = useParagraphAttributes(0, fadeDuration)
+
+  return (
+    <>
+      <span
+        css={[
+          tw`col-start-2`,
+          css`
+            opacity: ${opacity};
+          `,
+        ]}
+      >
+        =
+      </span>
+      <span
+        css={[
+          tw`col-start-3`,
+          css`
+            opacity: ${opacity};
+          `,
+        ]}
+        {...props}
+      />
+    </>
   )
 }
 
@@ -133,4 +208,30 @@ function useParagraphAttributes(
         )
 
   return { y, opacity }
+}
+
+type CustomSequenceProps = {
+  children: React.ReactNode
+  from: number
+  durationInFrames?: number
+  name?: string | undefined
+  layout?: 'absolute-fill' | 'none' | undefined
+}
+function CustomSequence({
+  from,
+  durationInFrames = Infinity,
+  name,
+  layout = 'none',
+  children,
+}: CustomSequenceProps) {
+  return (
+    <Sequence
+      from={from}
+      durationInFrames={durationInFrames}
+      name={name}
+      layout={layout}
+    >
+      {children}
+    </Sequence>
+  )
 }
