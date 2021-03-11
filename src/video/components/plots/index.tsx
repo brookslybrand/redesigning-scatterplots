@@ -5,6 +5,8 @@ import * as d3 from 'd3'
 import { dataset1 } from '../../data/plot-data'
 import { Easing, interpolate, useCurrentFrame } from 'remotion'
 
+type Coordinates = [number, number]
+
 // Constants
 const plotMargin = { top: 0, right: 292, bottom: 30, left: 180 }
 const heightToWidthRatio = 36 / 51 // ratio of the width to the height as measured in the book
@@ -54,7 +56,7 @@ function Plot() {
     throw new Error('Failed to find extent(s) of dataset')
   }
 
-  const interpolateAxisValue = (range: [number, number]) => {
+  const interpolateAxisValue = (range: Coordinates) => {
     return interpolate(frame, [460, 500], range, interpolateConfig)
   }
   const xAxisStart = interpolateAxisValue([0, minX])
@@ -164,23 +166,69 @@ if (
   throw new Error('Failed to find extent(s) of dataset')
 }
 
+function useMergeScatterplotPoints(
+  data1: Coordinates[],
+  data2?: Coordinates[]
+) {
+  const frame = useCurrentFrame()
+
+  // if there is no data2, only use data1
+  if (data2 === undefined) {
+    return data1.map(([x, y]) => ({ cx: x, cy: y, opacity: 1 }))
+  }
+
+  const opacityIn = interpolateAttribute(frame, [0, 1])
+  const opacityOut = interpolateAttribute(frame, [1, 0])
+
+  return (
+    data1
+      .map(([x1, y1], idx) => {
+        const coordinates2 = data2[idx]
+        // if the index is out of range fade the point out
+        if (coordinates2 === undefined) {
+          return { cx: x1, cy: y1, opacity: opacityOut }
+        }
+        const [x2, y2] = coordinates2
+        // reposition points with the same index
+        return {
+          cx: interpolateAttribute(frame, [x1, x2]),
+          cy: interpolateAttribute(frame, [y1, y2]),
+          opacity: 1,
+        }
+      })
+      // add all the coordinates remaining in the second dataset
+      .concat(
+        data2.slice(data1.length).map(([x, y]) => {
+          return { cx: x, cy: y, opacity: opacityIn }
+        })
+      )
+  )
+}
+
 type ScatterplotPointsProps = {
-  data1: [number, number][]
-  data2?: [number, number][]
+  data1: Coordinates[]
+  data2?: Coordinates[]
 }
 /**
  * Create the scatterplot points
  * If a second dataset is provided, the points will automatically be transitioned
  */
-function ScatterplotPoints({ data1 }: ScatterplotPointsProps) {
+function ScatterplotPoints({ data1, data2 }: ScatterplotPointsProps) {
+  const data = useMergeScatterplotPoints(data1, data2)
+
   return (
     <>
-      {data1.map(([x, y]) => (
+      {data.map(({ cx, cy, opacity }) => (
         <circle
-          key={`${x}-${y}`}
-          tw="fill-gray-900 "
-          cx={xScale(x)}
-          cy={yScale(y)}
+          key={`${cx}-${cy}`}
+          css={[
+            tw`fill-gray-900`,
+            css`
+              opacity: ${opacity};
+            `,
+          ]}
+          cx={xScale(cx)}
+          cy={yScale(cy)}
           r={4}
         />
       ))}
@@ -212,10 +260,6 @@ function AxesFull() {
 function AxesFullToRange() {
   const frame = useCurrentFrame()
 
-  const interpolateAxisValue = (range: [number, number]) => {
-    return interpolate(frame, [40, 80], range, interpolateConfig)
-  }
-
   if (
     minX === undefined ||
     maxX === undefined ||
@@ -225,10 +269,10 @@ function AxesFullToRange() {
     throw new Error('Failed to find extent(s) of dataset')
   }
 
-  const xAxisStart = interpolateAxisValue([0, minX])
-  const xAxisEnd = interpolateAxisValue([100, maxX])
-  const yAxisStart = interpolateAxisValue([0, minY])
-  const yAxisEnd = interpolateAxisValue([100, maxY])
+  const xAxisStart = interpolateAttribute(frame, [0, minX])
+  const xAxisEnd = interpolateAttribute(frame, [100, maxX])
+  const yAxisStart = interpolateAttribute(frame, [0, minY])
+  const yAxisEnd = interpolateAttribute(frame, [100, maxY])
 
   const xAxis = line([
     [xAxisStart, 0],
@@ -249,4 +293,14 @@ function AxesFullToRange() {
       <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
     </>
   )
+}
+
+/**
+ * Simple interpolate function that has a default frame range and config
+ * @param frame
+ * @param range
+ * @returns
+ */
+function interpolateAttribute(frame: number, range: Coordinates) {
+  return interpolate(frame, [40, 80], range, interpolateConfig)
 }

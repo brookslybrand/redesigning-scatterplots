@@ -20,7 +20,7 @@ import {
   scatterPlotTitle,
   scatterPlotText,
 } from './data/text'
-import { dataset1 } from './data/plot-data'
+import { dataset1, dataset2 } from './data/plot-data'
 
 export default function RedesigningScatterPlots() {
   return (
@@ -75,8 +75,6 @@ const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
   }
 })
 
-console.log(scatterplotTextSequenceProps[0])
-
 function RedesigningScatterplotsSequence() {
   return (
     <>
@@ -118,17 +116,72 @@ function RedesigningScatterplotsSequence() {
                     durationInFrames={durationInFrames - textOverlap}
                     name={`plot ${idx}`}
                   >
-                    {idx === 0 ? (
-                      <>
-                        <AxesFull />
-                        <ScatterplotPoints data1={dataset1} />
-                      </>
-                    ) : idx === 1 ? (
-                      <>
-                        <AxesFullToRange />
-                        <ScatterplotPoints data1={dataset1} />
-                      </>
-                    ) : null}
+                    {(() => {
+                      switch (idx) {
+                        case 0: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset1} />
+                            </>
+                          )
+                        }
+                        case 1: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset1} />
+                            </>
+                          )
+                        }
+                        case 2: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset1} />
+                            </>
+                          )
+                        }
+                        case 3: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints
+                                data1={dataset1}
+                                data2={dataset2}
+                              />
+                            </>
+                          )
+                        }
+                        case 4: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset2} />
+                            </>
+                          )
+                        }
+                        case 5: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset2} />
+                            </>
+                          )
+                        }
+                        case 6: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset2} />
+                            </>
+                          )
+                        }
+                        default: {
+                          return null
+                        }
+                      }
+                    })()}
                   </CustomSequence>
                 )
               }
