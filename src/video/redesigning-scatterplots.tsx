@@ -17,7 +17,7 @@ import {
   scatterPlotText,
 } from './data/text'
 import { Easing, interpolate, useCurrentFrame } from 'remotion'
-import React from 'react'
+import React, { Fragment } from 'react'
 
 // Constants
 const plotMargin = { top: 0, right: 292, bottom: 30, left: 180 }
@@ -95,7 +95,7 @@ const dataset1 = [
   [47, 30],
   [70, 70],
   [95, 70],
-]
+] as [number, number][]
 
 const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
 const interpolateConfig = {
@@ -180,8 +180,7 @@ function Plot() {
         />
       ))}
 
-      {/* x label */}
-      <text
+      {/* <text
         tw="text-xl text-gray-900 font-body"
         x={xScale(minX)}
         y={yScale(-2)}
@@ -191,7 +190,6 @@ function Plot() {
         min Xi
       </text>
 
-      {/* y label */}
       <text
         tw="text-xl text-gray-900 font-body"
         x={xScale(-2)}
@@ -202,7 +200,6 @@ function Plot() {
         min Yi
       </text>
 
-      {/* plot label */}
       <text
         tw="text-xl text-gray-900 font-body"
         x={plotLabelX}
@@ -210,17 +207,136 @@ function Plot() {
         alignmentBaseline="middle"
       >
         Conventional Scatterplot
-      </text>
+      </text> */}
     </svg>
+  )
+}
+
+function PlotContainer({ children }: { children: React.ReactNode }) {
+  const frame = useCurrentFrame()
+  const opacity = interpolate(frame, [0, plotFadeIn], [0, 1], interpolateConfig)
+
+  return (
+    <svg
+      css={[
+        tw`mt-12 mb-12`,
+        css`
+          opacity: ${opacity};
+        `,
+      ]}
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+    >
+      {children}
+    </svg>
+  )
+}
+
+const [minX, maxX] = d3.extent(dataset1.map(([x]) => x))
+const [minY, maxY] = d3.extent(dataset1.map(([, y]) => y))
+if (
+  minX === undefined ||
+  maxX === undefined ||
+  minY === undefined ||
+  maxY === undefined
+) {
+  throw new Error('Failed to find extent(s) of dataset')
+}
+
+type ScatterPointsProps = {
+  data1: [number, number][]
+  data2?: [number, number][]
+}
+/**
+ * Create the scatterplot points
+ * If a second dataset is provided, the points will automatically be transitioned
+ */
+function ScatterplotPoints({ data1 }: ScatterPointsProps) {
+  return (
+    <>
+      {data1.map(([x, y]) => (
+        <circle
+          key={`${x}-${y}`}
+          tw="fill-gray-900 "
+          cx={xScale(x)}
+          cy={yScale(y)}
+          r={4}
+        />
+      ))}
+    </>
+  )
+}
+
+function AxesFull() {
+  const xAxis = line([
+    [0, 0],
+    [100, 0],
+  ])
+  const yAxis = line([
+    [0, 0],
+    [0, 100],
+  ])
+
+  if (xAxis === null || yAxis === null) {
+    throw new Error(`xAxis ${xAxis} or yAxis ${yAxis} is null`)
+  }
+
+  return (
+    <>
+      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
+      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+    </>
+  )
+}
+function AxesFullToRange() {
+  const frame = useCurrentFrame()
+
+  const interpolateAxisValue = (range: [number, number]) => {
+    return interpolate(frame, [40, 80], range, interpolateConfig)
+  }
+
+  if (
+    minX === undefined ||
+    maxX === undefined ||
+    minY === undefined ||
+    maxY === undefined
+  ) {
+    throw new Error('Failed to find extent(s) of dataset')
+  }
+
+  const xAxisStart = interpolateAxisValue([0, minX])
+  const xAxisEnd = interpolateAxisValue([100, maxX])
+  const yAxisStart = interpolateAxisValue([0, minY])
+  const yAxisEnd = interpolateAxisValue([100, maxY])
+
+  const xAxis = line([
+    [xAxisStart, 0],
+    [xAxisEnd, 0],
+  ])
+  const yAxis = line([
+    [0, yAxisStart],
+    [0, yAxisEnd],
+  ])
+
+  if (xAxis === null || yAxis === null) {
+    throw new Error(`xAxis ${xAxis} or yAxis ${yAxis} is null`)
+  }
+
+  return (
+    <>
+      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
+      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+    </>
   )
 }
 
 // calculate when the paragraphs start and how long they will be
 const titleDuration = 150
+const textOverlap = 20
 const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
   const durationInFrames = 400
-  const overlap = 20
-  const from = plotFadeIn + (400 - overlap) * idx
+  const from = plotFadeIn + (400 - textOverlap) * idx
   return {
     text,
     from,
@@ -229,11 +345,12 @@ const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
   }
 })
 
-console.log(scatterplotTextSequenceProps)
+console.log(scatterplotTextSequenceProps[0])
 
 function RedesigningScatterplotsSequence() {
   return (
     <>
+      {/* title sequence */}
       <CustomSequence
         from={400}
         durationInFrames={titleDuration}
@@ -249,7 +366,46 @@ function RedesigningScatterplotsSequence() {
       >
         <Container>
           {/* <PlotPlaceholder /> */}
-          <Plot />
+          {/* <Plot /> */}
+
+          {/* plot - only fade in on the first paragraph */}
+          <PlotContainer>
+            {/* initial plot */}
+            <CustomSequence
+              from={0}
+              durationInFrames={scatterplotTextSequenceProps[0].from}
+            >
+              <AxesFull />
+              <ScatterplotPoints data1={dataset1} />
+            </CustomSequence>
+
+            {scatterplotTextSequenceProps.map(
+              ({ text, from, durationInFrames }, idx) => {
+                return (
+                  <CustomSequence
+                    from={from}
+                    // remove the overlap so the plot doesn't overlay itself
+                    durationInFrames={durationInFrames - textOverlap}
+                    name={`plot ${idx}`}
+                  >
+                    {idx === 0 ? (
+                      <>
+                        <AxesFull />
+                        <ScatterplotPoints data1={dataset1} />
+                      </>
+                    ) : idx === 1 ? (
+                      <>
+                        <AxesFullToRange />
+                        <ScatterplotPoints data1={dataset1} />
+                      </>
+                    ) : null}
+                  </CustomSequence>
+                )
+              }
+            )}
+          </PlotContainer>
+
+          {/* text */}
           {scatterplotTextSequenceProps.map(({ text, ...props }) => {
             return (
               <CustomSequence key={props.name} {...props}>
@@ -275,9 +431,6 @@ export const totalDuration =
     0
   )
 
-const paragraphCss = [
-  tw`transform -translate-x-1/2 left-1/2`,
-  css`
-    width: 750px;
-  `,
-]
+const paragraphCss = css`
+  width: 750px;
+`
