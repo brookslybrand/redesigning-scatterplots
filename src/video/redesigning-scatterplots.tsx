@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
+import * as d3 from 'd3'
 
 import CustomSequence from './components/custom-sequence'
 import {
@@ -19,6 +20,7 @@ import {
 // Constants
 const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
 const plotWidth = 700
+const plotHeight = plotWidth * widthHeightRatio
 
 export default function RedesigningScatterPlots() {
   return (
@@ -66,11 +68,75 @@ function PlotPlaceholder() {
         tw`mt-16 mb-12 bg-transparent border-2 border-gray-red-400`,
         css`
           width: ${plotWidth}px;
-          height: ${plotWidth * widthHeightRatio}px;
+          height: ${plotHeight}px;
           opacity: ${opacity};
         `,
       ]}
     />
+  )
+}
+
+const xScale = d3.scaleLinear().domain([0, 100]).range([0, plotWidth])
+const yScale = d3.scaleLinear().domain([0, 100]).range([plotHeight, 0])
+
+const dataset1 = [
+  [10, 12],
+  [17, 13],
+  [20, 10],
+  [20, 18],
+  [29, 28],
+  [32, 21],
+  [33, 26],
+  [38, 80],
+  [45, 26],
+  [47, 30],
+  [70, 70],
+  [95, 70],
+]
+
+const line = d3
+  .line()
+  .x(([x]) => xScale(x))
+  .y(([, y]) => yScale(y))
+function Plot() {
+  const opacity = useTextTransitionAttributes(0, plotFadeIn)
+
+  const xAxis = line([
+    [0, 0],
+    [100, 0],
+  ])
+  const yAxis = line([
+    [0, 100],
+    [0, 0],
+  ])
+
+  if (xAxis === null || yAxis === null) {
+    throw new Error(`xAxis ${xAxis} or yAxis ${yAxis} is null`)
+  }
+
+  return (
+    <svg
+      tw="mt-16 mb-12 "
+      width={plotWidth}
+      height={plotHeight}
+      viewBox={`0 0 ${plotWidth} ${plotHeight}`}
+    >
+      <path tw="stroke-gray-900" strokeWidth={2} d={xAxis} />
+      <path tw="stroke-gray-900" strokeWidth={2} d={yAxis} />
+
+      {dataset1.map(([x, y]) => {
+        console.log(xScale(x), yScale(y))
+        return (
+          <circle
+            key={`${x}-${y}`}
+            tw="fill-gray-900 "
+            cx={xScale(x)}
+            cy={yScale(y)}
+            r={4}
+          />
+        )
+      })}
+    </svg>
   )
 }
 
@@ -105,7 +171,8 @@ function RedesigningScatterplotsSequence() {
         name="scatterplot and text"
       >
         <Container>
-          <PlotPlaceholder />
+          {/* <PlotPlaceholder /> */}
+          <Plot />
           {scatterplotTextSequenceProps.map(({ text, ...props }) => {
             return (
               <CustomSequence key={props.name} {...props}>
