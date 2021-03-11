@@ -2,7 +2,11 @@ import { useCurrentFrame, interpolate, Easing, useVideoConfig } from 'remotion'
 
 export { useTextTransitionAttributes }
 
-const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
+const interpolateConfig = {
+  easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
+  extrapolateLeft: 'clamp',
+  extrapolateRight: 'clamp',
+} as const
 
 function useTextTransitionAttributes(
   transformDuration: number,
@@ -18,12 +22,6 @@ function useTextTransitionAttributes(
     transform out start: ${transformOutStart}, fade out start: ${fadeOutStart}
     `)
   }
-
-  const interpolateConfig = {
-    easing: ease,
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  } as const
 
   const y = interpolate(
     frame,

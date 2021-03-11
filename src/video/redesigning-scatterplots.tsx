@@ -16,6 +16,7 @@ import {
   scatterPlotTitle,
   scatterPlotText,
 } from './data/text'
+import { Easing, interpolate, useCurrentFrame } from 'remotion'
 
 // Constants
 const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
@@ -94,20 +95,47 @@ const dataset1 = [
   [95, 70],
 ]
 
+const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
+const interpolateConfig = {
+  easing: ease,
+  extrapolateLeft: 'clamp',
+  extrapolateRight: 'clamp',
+} as const
+
 const line = d3
   .line()
   .x(([x]) => xScale(x))
   .y(([, y]) => yScale(y))
 function Plot() {
-  const opacity = useTextTransitionAttributes(0, plotFadeIn)
+  const frame = useCurrentFrame()
+  const opacity = interpolate(frame, [0, plotFadeIn], [0, 1], interpolateConfig)
+
+  const [minX, maxX] = d3.extent(dataset1.map(([x]) => x))
+  const [minY, maxY] = d3.extent(dataset1.map(([, y]) => y))
+  if (
+    minX === undefined ||
+    maxX === undefined ||
+    minY === undefined ||
+    maxY === undefined
+  ) {
+    throw new Error('Failed to find extent(s) of dataset')
+  }
+
+  const interpolateAxisValue = (range: [number, number]) => {
+    return interpolate(frame, [460, 500], range, interpolateConfig)
+  }
+  const xAxisStart = interpolateAxisValue([0, minX])
+  const xAxisEnd = interpolateAxisValue([100, maxX])
+  const yAxisStart = interpolateAxisValue([0, minY])
+  const yAxisEnd = interpolateAxisValue([100, maxY])
 
   const xAxis = line([
-    [0, 0],
-    [100, 0],
+    [xAxisStart, 0],
+    [xAxisEnd, 0],
   ])
   const yAxis = line([
-    [0, 100],
-    [0, 0],
+    [0, yAxisStart],
+    [0, yAxisEnd],
   ])
 
   if (xAxis === null || yAxis === null) {
@@ -116,7 +144,12 @@ function Plot() {
 
   return (
     <svg
-      tw="mt-16 mb-12 "
+      css={[
+        tw`mt-16 mb-12`,
+        css`
+          opacity: ${opacity};
+        `,
+      ]}
       width={plotWidth}
       height={plotHeight}
       viewBox={`0 0 ${plotWidth} ${plotHeight}`}
@@ -124,18 +157,15 @@ function Plot() {
       <path tw="stroke-gray-900" strokeWidth={2} d={xAxis} />
       <path tw="stroke-gray-900" strokeWidth={2} d={yAxis} />
 
-      {dataset1.map(([x, y]) => {
-        console.log(xScale(x), yScale(y))
-        return (
-          <circle
-            key={`${x}-${y}`}
-            tw="fill-gray-900 "
-            cx={xScale(x)}
-            cy={yScale(y)}
-            r={4}
-          />
-        )
-      })}
+      {dataset1.map(([x, y]) => (
+        <circle
+          key={`${x}-${y}`}
+          tw="fill-gray-900 "
+          cx={xScale(x)}
+          cy={yScale(y)}
+          r={4}
+        />
+      ))}
     </svg>
   )
 }
@@ -153,6 +183,8 @@ const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
     name: `redesigning scatterplots text ${idx + 1}`,
   }
 })
+
+console.log(scatterplotTextSequenceProps)
 
 function RedesigningScatterplotsSequence() {
   return (
