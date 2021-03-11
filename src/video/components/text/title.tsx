@@ -16,7 +16,7 @@ export default function Title({
   return (
     <h1
       css={[
-        tw`text-6xl font-display`,
+        tw`text-6xl text-gray-900 font-display`,
         css`
           opacity: ${opacity};
         `,

@@ -2,7 +2,12 @@
 import tw, { css } from 'twin.macro'
 
 import CustomSequence from './components/custom-sequence'
-import { Paragraph, Title, DataInkRatioFormula } from './components/text'
+import {
+  Citation,
+  DataInkRatioFormula,
+  Paragraph,
+  Title,
+} from './components/text'
 import { useTextTransitionAttributes } from './components/text/hooks'
 import {
   dataInkTitle,
@@ -20,6 +25,7 @@ export default function RedesigningScatterPlots() {
     <article tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
       <DataInkTextSequence />
       <RedesigningScatterplotsSequence />
+      <Citation />
     </article>
   )
 }
