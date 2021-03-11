@@ -2,7 +2,12 @@
 import tw, { css } from 'twin.macro'
 
 import CustomSequence from './components/custom-sequence'
-import { Paragraph, Title, DataInkRatioFormula } from './components/text'
+import {
+  Citation,
+  DataInkRatioFormula,
+  Paragraph,
+  Title,
+} from './components/text'
 import { useTextTransitionAttributes } from './components/text/hooks'
 import {
   dataInkTitle,
@@ -20,11 +25,7 @@ export default function RedesigningScatterPlots() {
     <article tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
       <DataInkTextSequence />
       <RedesigningScatterplotsSequence />
-      <footer tw="absolute bottom-0 left-0 m-2 text-gray-900 text-xl font-light font-body">
-        Edward R. Tufte,{' '}
-        <em tw="italic">The Visual Display of Quantitative Information</em> (2nd
-        ed.). Graphics Press. 93, 130-132
-      </footer>
+      <Citation />
     </article>
   )
 }
