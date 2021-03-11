@@ -17,11 +17,16 @@ import {
   scatterPlotText,
 } from './data/text'
 import { Easing, interpolate, useCurrentFrame } from 'remotion'
+import React from 'react'
 
 // Constants
-const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
-const plotWidth = 700
-const plotHeight = plotWidth * widthHeightRatio
+const plotMargin = { top: 0, right: 292, bottom: 30, left: 180 }
+const heightToWidthRatio = 36 / 51 // ratio of the width to the height as measured in the book
+
+const svgWidth = 1300
+const plotWidth = svgWidth - plotMargin.right - plotMargin.left // 700
+const plotHeight = plotWidth * heightToWidthRatio
+const svgHeight = plotHeight + plotMargin.top + plotMargin.bottom
 
 export default function RedesigningScatterPlots() {
   return (
@@ -48,7 +53,7 @@ function DataInkTextSequence() {
           durationInFrames={dataInkDuration - 30}
           name="data-ink text"
         >
-          <Paragraph>
+          <Paragraph css={paragraphCss}>
             {dataInkText}
             <CustomSequence from={120} name="data ink ratio formula">
               <DataInkRatioFormula />
@@ -77,9 +82,6 @@ function PlotPlaceholder() {
   )
 }
 
-const xScale = d3.scaleLinear().domain([0, 100]).range([0, plotWidth])
-const yScale = d3.scaleLinear().domain([0, 100]).range([plotHeight, 0])
-
 const dataset1 = [
   [10, 12],
   [17, 13],
@@ -102,10 +104,21 @@ const interpolateConfig = {
   extrapolateRight: 'clamp',
 } as const
 
+const xScale = d3
+  .scaleLinear()
+  .domain([0, 100])
+  .range([plotMargin.left, plotWidth + plotMargin.left])
+const yScale = d3
+  .scaleLinear()
+  .domain([0, 100])
+  .range([plotHeight + plotMargin.top, plotMargin.top])
 const line = d3
   .line()
   .x(([x]) => xScale(x))
   .y(([, y]) => yScale(y))
+
+const plotLabelX = xScale(105)
+
 function Plot() {
   const frame = useCurrentFrame()
   const opacity = interpolate(frame, [0, plotFadeIn], [0, 1], interpolateConfig)
@@ -145,17 +158,17 @@ function Plot() {
   return (
     <svg
       css={[
-        tw`mt-16 mb-12`,
+        tw`mt-12 mb-12 `,
         css`
           opacity: ${opacity};
         `,
       ]}
-      width={plotWidth}
-      height={plotHeight}
-      viewBox={`0 0 ${plotWidth} ${plotHeight}`}
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
     >
-      <path tw="stroke-gray-900" strokeWidth={2} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={2} d={yAxis} />
+      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
+      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
 
       {dataset1.map(([x, y]) => (
         <circle
@@ -166,6 +179,38 @@ function Plot() {
           r={4}
         />
       ))}
+
+      {/* x label */}
+      <text
+        tw="text-xl text-gray-900 font-body"
+        x={xScale(minX)}
+        y={yScale(-2)}
+        textAnchor="middle"
+        alignmentBaseline="hanging"
+      >
+        min Xi
+      </text>
+
+      {/* y label */}
+      <text
+        tw="text-xl text-gray-900 font-body"
+        x={xScale(-2)}
+        y={yScale(minY)}
+        alignmentBaseline="middle"
+        textAnchor="end"
+      >
+        min Yi
+      </text>
+
+      {/* plot label */}
+      <text
+        tw="text-xl text-gray-900 font-body"
+        x={plotLabelX}
+        y={yScale(0)}
+        alignmentBaseline="middle"
+      >
+        Conventional Scatterplot
+      </text>
     </svg>
   )
 }
@@ -208,7 +253,7 @@ function RedesigningScatterplotsSequence() {
           {scatterplotTextSequenceProps.map(({ text, ...props }) => {
             return (
               <CustomSequence key={props.name} {...props}>
-                <Paragraph>{text}</Paragraph>
+                <Paragraph css={paragraphCss}>{text}</Paragraph>
               </CustomSequence>
             )
           })}
@@ -218,19 +263,8 @@ function RedesigningScatterplotsSequence() {
   )
 }
 
-type ContainerProps = React.ComponentPropsWithoutRef<'section'>
-function Container(props: ContainerProps) {
-  return (
-    <section
-      css={[
-        tw`absolute`,
-        css`
-          min-width: ${plotWidth}px;
-        `,
-      ]}
-      {...props}
-    />
-  )
+function Container(props: React.ComponentPropsWithoutRef<'section'>) {
+  return <section css={[tw`absolute`]} {...props} />
 }
 
 export const totalDuration =
@@ -240,3 +274,10 @@ export const totalDuration =
       Math.max(totalDuration, from + durationInFrames),
     0
   )
+
+const paragraphCss = [
+  tw`transform -translate-x-1/2 left-1/2`,
+  css`
+    width: 750px;
+  `,
+]

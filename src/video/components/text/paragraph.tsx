@@ -7,11 +7,12 @@ type ParagraphProps = {
   transformDuration?: number
   fadeDuration?: number
   children: React.ReactNode
-}
+} & React.ComponentPropsWithoutRef<'p'>
 export default function Paragraph({
   transformDuration = 50,
   fadeDuration = transformDuration + 10,
   children,
+  ...props
 }: ParagraphProps) {
   const { y, opacity } = useTextTransitionAttributes(
     transformDuration,
@@ -27,6 +28,7 @@ export default function Paragraph({
           opacity: ${opacity};
         `,
       ]}
+      {...props}
     >
       {children}
     </p>
