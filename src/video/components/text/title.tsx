@@ -12,7 +12,7 @@ export default function Title({
   children,
   ...props
 }: TitleProps) {
-  const { opacity } = useTextTransitionAttributes(0, fadeDuration)
+  const { opacity } = useTextTransitionAttributes(fadeDuration)
   return (
     <h1
       css={[

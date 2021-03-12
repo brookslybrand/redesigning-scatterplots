@@ -1,8 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
-import { useCurrentFrame, useVideoConfig } from 'remotion'
 
-import { CustomSequence, customInterpolate } from './custom-remotion-utils'
+import { CustomSequence } from './custom-remotion-utils'
 import {
   Citation,
   DataInkRatioFormula,
@@ -31,35 +30,12 @@ import {
   scatterPlotText,
 } from './data/text'
 import { dataset1, dataset2, dataset3 } from './data/plot-data'
-import React from 'react'
 
 // give some breathing room before beginning to show everything
-const startDelay = 20
 
 export default function RedesigningScatterPlots() {
-  const frame = useCurrentFrame()
-  const { durationInFrames } = useVideoConfig()
-
-  const fadeOutStart = durationInFrames - 60
-
   return (
-    <article
-      css={[
-        tw`flex flex-col items-center w-full h-full bg-gray-yellow-200`,
-        // fade out all the children at the end
-        frame >= fadeOutStart
-          ? css`
-              * {
-                opacity: ${customInterpolate(
-                  frame,
-                  [fadeOutStart, durationInFrames],
-                  [1, 0]
-                )};
-              }
-            `
-          : null,
-      ]}
-    >
+    <article tw="flex flex-col items-center w-full h-full bg-gray-yellow-200">
       <DataInkTextSequence />
       <RedesigningScatterplotsSequence />
       <Citation />
@@ -70,12 +46,14 @@ export default function RedesigningScatterPlots() {
 function DataInkTextSequence() {
   return (
     <CustomSequence
-      from={startDelay}
+      from={0}
       durationInFrames={dataInkText.duration}
       name="data-ink title and text"
     >
       <Container>
-        <Title tw="my-24 text-center">{dataInkTitle}</Title>
+        <Title tw="my-24 text-center" fadeDuration={-1}>
+          {dataInkTitle}
+        </Title>
         <CustomSequence
           from={40}
           durationInFrames={dataInkText.duration - 40}
@@ -118,7 +96,7 @@ function RedesigningScatterplotsSequence() {
     <>
       {/* title sequence */}
       <CustomSequence
-        from={startDelay + dataInkText.duration}
+        from={dataInkText.duration}
         durationInFrames={titleDuration}
         name="redesigning scatterplots title"
       >
@@ -127,7 +105,7 @@ function RedesigningScatterplotsSequence() {
         </Container>
       </CustomSequence>
       <CustomSequence
-        from={startDelay + dataInkText.duration + titleDuration - 30}
+        from={dataInkText.duration + titleDuration - 30}
         name="scatterplot and text"
       >
         <Container>
@@ -257,7 +235,6 @@ function Container(props: React.ComponentPropsWithoutRef<'section'>) {
 }
 
 export const totalDuration =
-  startDelay +
   dataInkText.duration +
   scatterplotTextSequenceProps.reduce(
     (totalDuration, { from, durationInFrames }) =>

@@ -36,7 +36,7 @@ function DataInkRatioFormulaGrid({
   fadeDuration = 60,
   children,
 }: DataInkRatioFormulaGridProps) {
-  const { opacity } = useTextTransitionAttributes(0, fadeDuration)
+  const { opacity } = useTextTransitionAttributes(fadeDuration)
 
   return (
     <span
@@ -61,7 +61,7 @@ function DataInkRatioExplanation({
   fadeDuration = 60,
   ...props
 }: DataInkRatioExplanationProps) {
-  const { opacity } = useTextTransitionAttributes(0, fadeDuration)
+  const { opacity } = useTextTransitionAttributes(fadeDuration)
 
   return (
     <>

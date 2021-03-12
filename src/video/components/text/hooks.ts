@@ -3,26 +3,16 @@ import { customInterpolate } from '../../custom-remotion-utils'
 
 export { useTextTransitionAttributes }
 
-function useTextTransitionAttributes(
-  transformDuration: number,
-  fadeDuration: number
-) {
+function useTextTransitionAttributes(fadeDuration: number) {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig() // paragraph exists as long as the duration
-  const transformOutStart = durationInFrames - transformDuration
   const fadeOutStart = durationInFrames - fadeDuration
-  if (transformOutStart < transformDuration || fadeOutStart < fadeDuration) {
+  if (fadeOutStart < fadeDuration) {
     throw new Error(`
     Not enough time allotted to transform or fade out.
-    transform out start: ${transformOutStart}, fade out start: ${fadeOutStart}
+    Fade out start: ${fadeOutStart}
     `)
   }
-
-  const y = customInterpolate(
-    frame,
-    [0, transformDuration],
-    [200, 0] // pixels
-  )
 
   const opacity =
     frame < fadeOutStart
@@ -33,5 +23,5 @@ function useTextTransitionAttributes(
           [1, 0]
         )
 
-  return { y, opacity }
+  return { opacity }
 }
