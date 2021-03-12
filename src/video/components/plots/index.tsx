@@ -1,9 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
+import { useCurrentFrame } from 'remotion'
 import * as d3 from 'd3'
 
 import { dataset1 } from '../../data/plot-data'
-import { Easing, interpolate, useCurrentFrame } from 'remotion'
+import { customInterpolate } from '../../custom-remotion-utils'
 
 type Coordinates = [number, number]
 type Dataset = Coordinates[]
@@ -34,13 +35,6 @@ const svgHeight = plotHeight + plotMargin.top + plotMargin.bottom
 const numberOfXTicks = 6
 const numberOfYTicks = 7
 
-const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
-const interpolateConfig = {
-  easing: ease,
-  extrapolateLeft: 'clamp',
-  extrapolateRight: 'clamp',
-} as const
-
 // assume that the data points are in a range from 0-100
 const xScale = d3
   .scaleLinear()
@@ -63,7 +57,7 @@ const plotFadeIn = 40
 
 function Plot() {
   const frame = useCurrentFrame()
-  const opacity = interpolate(frame, [0, plotFadeIn], [0, 1], interpolateConfig)
+  const opacity = customInterpolate(frame, [0, plotFadeIn], [0, 1])
 
   const [minX, maxX] = d3.extent(dataset1.map(([x]) => x))
   const [minY, maxY] = d3.extent(dataset1.map(([, y]) => y))
@@ -77,7 +71,7 @@ function Plot() {
   }
 
   const interpolateAxisValue = (range: Coordinates) => {
-    return interpolate(frame, [460, 500], range, interpolateConfig)
+    return customInterpolate(frame, [460, 500], range)
   }
   const xAxisStart = interpolateAxisValue([0, minX])
   const xAxisEnd = interpolateAxisValue([100, maxX])
@@ -156,7 +150,7 @@ function Plot() {
 
 function PlotContainer({ children }: { children: React.ReactNode }) {
   const frame = useCurrentFrame()
-  const opacity = interpolate(frame, [0, plotFadeIn], [0, 1], interpolateConfig)
+  const opacity = customInterpolate(frame, [0, plotFadeIn], [0, 1])
 
   return (
     <svg
@@ -477,7 +471,7 @@ function TicksToRange({ data }: { data: Dataset }) {
 
 function TicksFadeOut({ data }: { data: Dataset }) {
   const frame = useCurrentFrame()
-  const opacity = interpolate(frame, [0, 40], [1, 0], interpolateConfig)
+  const opacity = customInterpolate(frame, [0, 40], [1, 0])
   const { minX, minY } = getExtents(data)
   const xTickPaths = createXTickPaths({ minX })
   const yTickPaths = createYTickPaths({ minY })
@@ -594,7 +588,7 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
  */
 const interpolateFrames: [number, number] = [40, 80]
 function interpolateAttribute(frame: number, range: Coordinates) {
-  return interpolate(frame, interpolateFrames, range, interpolateConfig)
+  return customInterpolate(frame, interpolateFrames, range)
 }
 
 function getExtents(data: Dataset) {

@@ -1,7 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
+import { useCurrentFrame, useVideoConfig } from 'remotion'
 
-import CustomSequence from './components/custom-sequence'
+import { CustomSequence, customInterpolate } from './custom-remotion-utils'
 import {
   Citation,
   DataInkRatioFormula,
@@ -30,8 +31,29 @@ import {
 import { dataset1, dataset2, dataset3 } from './data/plot-data'
 
 export default function RedesigningScatterPlots() {
+  const frame = useCurrentFrame()
+  const { durationInFrames } = useVideoConfig()
+
+  const fadeOutStart = durationInFrames - 60
+
   return (
-    <article tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
+    <article
+      css={[
+        tw`flex flex-col items-center w-full h-full bg-gray-yellow-200`,
+        // fade out all the children at the end
+        frame >= fadeOutStart
+          ? css`
+              * {
+                opacity: ${customInterpolate(
+                  frame,
+                  [fadeOutStart, durationInFrames],
+                  [1, 0]
+                )};
+              }
+            `
+          : null,
+      ]}
+    >
       <DataInkTextSequence />
       <RedesigningScatterplotsSequence />
       <Citation />

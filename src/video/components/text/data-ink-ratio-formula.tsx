@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
 
-import CustomSequence from '../custom-sequence'
+import { CustomSequence } from '../../custom-remotion-utils'
 import { useTextTransitionAttributes } from './hooks'
 
 export default function DataInkRatioFormula() {
