@@ -21,6 +21,8 @@ import {
   TicksFadeIn,
   TicksToRange,
   TicksFadeOut,
+  PlotLabel,
+  MinMaxLabels,
 } from './components/plots'
 import {
   dataInkTitle,
@@ -170,6 +172,7 @@ function RedesigningScatterplotsSequence() {
                             <>
                               <AxesRange data={dataset1} />
                               <ScatterplotPoints data1={dataset1} />
+                              <MinMaxLabels data={dataset1} />
                             </>
                           )
                         }
@@ -183,6 +186,7 @@ function RedesigningScatterplotsSequence() {
                                 data2={dataset2}
                               />
                               <TicksFadeIn />
+                              <PlotLabel>Conventional Scatterplot</PlotLabel>
                             </>
                           )
                         }
@@ -192,6 +196,7 @@ function RedesigningScatterplotsSequence() {
                               <AxesFullToRange data={dataset2} />
                               <ScatterplotPoints data1={dataset2} />
                               <TicksToRange data={dataset2} />
+                              <PlotLabel>Range-Frame</PlotLabel>
                             </>
                           )
                         }

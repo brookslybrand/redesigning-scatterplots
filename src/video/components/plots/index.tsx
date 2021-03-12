@@ -1,10 +1,10 @@
 /** @jsxImportSource @emotion/react */
-import tw, { css } from 'twin.macro'
-import { useCurrentFrame } from 'remotion'
+import tw, { css, theme } from 'twin.macro'
+import { useCurrentFrame, useVideoConfig } from 'remotion'
 import * as d3 from 'd3'
 
-import { dataset1 } from '../../data/plot-data'
 import { customInterpolate } from '../../custom-remotion-utils'
+import React from 'react'
 
 type Coordinates = [number, number]
 type Dataset = Coordinates[]
@@ -21,11 +21,13 @@ export {
   TicksFadeIn,
   TicksToRange,
   TicksFadeOut,
+  PlotLabel,
+  MinMaxLabels,
 }
 
 // constants
 
-const plotMargin = { top: 0, right: 292, bottom: 30, left: 180 }
+const plotMargin = { top: 0, right: 292, bottom: 38, left: 180 }
 const heightToWidthRatio = 36 / 51 // ratio of the width to the height as measured in the book
 
 const svgWidth = 1300
@@ -34,6 +36,12 @@ const plotHeight = plotWidth * heightToWidthRatio
 const svgHeight = plotHeight + plotMargin.top + plotMargin.bottom
 const numberOfXTicks = 6
 const numberOfYTicks = 7
+const fontSize = parseFloat(theme(`fontSize.xl`)) * 16
+
+// values to keep all of the transition in sync
+const transitionStart = 40
+const transitionDuration = 40
+const transitionEnd = transitionStart + transitionDuration
 
 // assume that the data points are in a range from 0-100
 const xScale = d3
@@ -49,113 +57,14 @@ const line = d3
   .x(([x]) => xScale(x))
   .y(([, y]) => yScale(y))
 
-const plotLabelX = xScale(105)
-
-const plotFadeIn = 40
-
-// components
-
-function Plot() {
-  const frame = useCurrentFrame()
-  const opacity = customInterpolate(frame, [0, plotFadeIn], [0, 1])
-
-  const [minX, maxX] = d3.extent(dataset1.map(([x]) => x))
-  const [minY, maxY] = d3.extent(dataset1.map(([, y]) => y))
-  if (
-    minX === undefined ||
-    maxX === undefined ||
-    minY === undefined ||
-    maxY === undefined
-  ) {
-    throw new Error('Failed to find extent(s) of dataset')
-  }
-
-  const interpolateAxisValue = (range: Coordinates) => {
-    return customInterpolate(frame, [460, 500], range)
-  }
-  const xAxisStart = interpolateAxisValue([0, minX])
-  const xAxisEnd = interpolateAxisValue([100, maxX])
-  const yAxisStart = interpolateAxisValue([0, minY])
-  const yAxisEnd = interpolateAxisValue([100, maxY])
-
-  const xAxis = line([
-    [xAxisStart, 0],
-    [xAxisEnd, 0],
-  ])
-  const yAxis = line([
-    [0, yAxisStart],
-    [0, yAxisEnd],
-  ])
-
-  if (xAxis === null || yAxis === null) {
-    throw new Error(`xAxis ${xAxis} or yAxis ${yAxis} is null`)
-  }
-
-  return (
-    <svg
-      css={[
-        tw`mt-12 mb-12`,
-        css`
-          opacity: ${opacity};
-        `,
-      ]}
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-    >
-      <path strokeWidth={1} d={xAxis} />
-      <path strokeWidth={1} d={yAxis} />
-
-      {dataset1.map(([x, y]) => (
-        <circle
-          key={`${x}-${y}`}
-          tw="fill-gray-900 "
-          cx={xScale(x)}
-          cy={yScale(y)}
-          r={4}
-        />
-      ))}
-
-      {/* <text
-        tw="text-xl text-gray-900 font-body"
-        x={xScale(minX)}
-        y={yScale(-2)}
-        textAnchor="middle"
-        alignmentBaseline="hanging"
-      >
-        min Xi
-      </text>
-
-      <text
-        tw="text-xl text-gray-900 font-body"
-        x={xScale(-2)}
-        y={yScale(minY)}
-        alignmentBaseline="middle"
-        textAnchor="end"
-      >
-        min Yi
-      </text>
-
-      <text
-        tw="text-xl text-gray-900 font-body"
-        x={plotLabelX}
-        y={yScale(0)}
-        alignmentBaseline="middle"
-      >
-        Conventional Scatterplot
-      </text> */}
-    </svg>
-  )
-}
-
 function PlotContainer({ children }: { children: React.ReactNode }) {
   const frame = useCurrentFrame()
-  const opacity = customInterpolate(frame, [0, plotFadeIn], [0, 1])
+  const opacity = customInterpolate(frame, [0, transitionDuration], [0, 1])
 
   return (
     <svg
       css={[
-        tw`mt-12 mb-12 stroke-gray-900 fill-gray-900 `,
+        tw`mt-12 mb-12 text-xl font-light text-gray-900 stroke-gray-900 fill-gray-900 font-body`,
         css`
           opacity: ${opacity};
         `,
@@ -290,9 +199,7 @@ function AxesRangeToQuartile({
   data2,
 }: Required<ScatterplotPointsProps>) {
   const frame = useCurrentFrame()
-
-  const endOfDataSetTransition = interpolateFrames[0] + interpolateFrames[1]
-  const quartileTransitionFrame = frame - interpolateFrames[1] // start after axes transition is done
+  const quartileTransitionFrame = frame - transitionEnd // start after axes transition is done
   const translate = interpolateAttribute(quartileTransitionFrame, [
     0,
     quartileAxisOffset,
@@ -318,7 +225,7 @@ function AxesRangeToQuartile({
   return (
     <>
       {/* transition between the two axes first, then transition to quartiles */}
-      {frame < endOfDataSetTransition ? (
+      {frame < transitionEnd ? (
         <>
           <path strokeWidth={1} d={xAxis} />
           <path strokeWidth={1} d={yAxis} />
@@ -521,6 +428,170 @@ function Ticks({ xTicks, yTicks, ...props }: TicksProps) {
   )
 }
 
+function PlotLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Label x={xScale(105)} y={yScale(0)} alignmentBaseline="middle">
+      {children}
+    </Label>
+  )
+}
+
+function MinMaxLabels({ data }: AxesProps) {
+  const frame = useCurrentFrame()
+  const { durationInFrames } = useVideoConfig()
+  const extents = getExtents(data)
+  const { minX, minY, maxX, maxY } = extents
+
+  const fadeOutStart = durationInFrames - transitionDuration
+  const opacity =
+    frame < fadeOutStart
+      ? 1
+      : customInterpolate(frame, [fadeOutStart, durationInFrames], [1, 0])
+
+  return (
+    <g
+      css={css`
+        opacity: ${opacity};
+      `}
+    >
+      <MinMaxLines data={data} {...extents} />
+
+      <LabelWithSubscript
+        x={xScale(minX)}
+        y={yScale(-2)}
+        textAnchor="middle"
+        alignmentBaseline="hanging"
+      >
+        min X
+      </LabelWithSubscript>
+      <LabelWithSubscript
+        x={xScale(maxX)}
+        y={yScale(-2)}
+        textAnchor="middle"
+        alignmentBaseline="hanging"
+      >
+        max X
+      </LabelWithSubscript>
+
+      <LabelWithSubscript
+        x={xScale(-2)}
+        y={yScale(minY)}
+        alignmentBaseline="middle"
+        textAnchor="end"
+      >
+        min Y
+      </LabelWithSubscript>
+      <LabelWithSubscript
+        x={xScale(-2)}
+        y={yScale(maxY)}
+        alignmentBaseline="middle"
+        textAnchor="end"
+      >
+        max Y
+      </LabelWithSubscript>
+    </g>
+  )
+}
+
+function MinMaxLines({
+  data,
+  minX,
+  minY,
+  maxX,
+  maxY,
+}: { data: Coordinates[] } & ReturnType<typeof getExtents>) {
+  const frame = useCurrentFrame()
+  let minXPoint
+  let maxXPoint
+  let minYPoint
+  let maxYPoint
+  for (const point of data) {
+    const [x, y] = point
+    if (x === minX) {
+      minXPoint = point
+    } else if (x === maxX) {
+      maxXPoint = point
+    } else if (y === minY) {
+      minYPoint = point
+    } else if (y === maxY) {
+      maxYPoint = point
+    }
+  }
+  if (!minXPoint || !maxXPoint || !minYPoint || !maxYPoint) {
+    throw new Error(`Couldn't find all points`)
+  }
+
+  const interpolateXLines = ([x, y]: Coordinates) =>
+    line([
+      [x, 0],
+      [x, interpolateAttribute(frame, [0, y])],
+    ])
+  const interpolateYLines = ([x, y]: Coordinates) =>
+    line([
+      [0, y],
+      [interpolateAttribute(frame, [0, x]), y],
+    ])
+
+  const minXLine = interpolateXLines(minXPoint)
+  const maxXLine = interpolateXLines(maxXPoint)
+  const minYLine = interpolateYLines(minYPoint)
+  const maxYLine = interpolateYLines(maxYPoint)
+
+  if (!minXLine || !maxXLine || !minYLine || !maxYLine) {
+    throw new Error('Something went wrong, line is null')
+  }
+
+  return (
+    <>
+      <DashedLine d={minXLine} />
+      <DashedLine d={maxXLine} />
+      <DashedLine d={minYLine} />
+      <DashedLine d={maxYLine} />
+    </>
+  )
+}
+function DashedLine(props: React.ComponentPropsWithoutRef<'path'>) {
+  return <path strokeWidth={1} strokeDasharray="7 3" {...props} />
+}
+
+function Label(props: React.ComponentPropsWithoutRef<'text'>) {
+  const frame = useCurrentFrame()
+  const { durationInFrames } = useVideoConfig()
+  const fadeOutStart = durationInFrames - transitionDuration
+  const opacity =
+    frame < fadeOutStart
+      ? interpolateAttribute(frame, [0, 1])
+      : customInterpolate(frame, [fadeOutStart, durationInFrames], [1, 0])
+
+  return (
+    <text
+      css={[
+        css`
+          opacity: ${opacity};
+        `,
+      ]}
+      {...props}
+    />
+  )
+}
+
+function LabelWithSubscript({
+  subscript = 'i',
+  children,
+  x,
+  y,
+  ...props
+}: React.ComponentPropsWithoutRef<'text'> & { subscript?: string }) {
+  return (
+    <Label x={x} y={y} {...props}>
+      {children}
+      <tspan dy={fontSize / 2} {...props}>
+        {subscript}
+      </tspan>
+    </Label>
+  )
+}
+
 // logic/hooks
 
 function useMergeTicks(ticks1: string[], ticks2: string[]) {
@@ -586,9 +657,8 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
  * @param range
  * @returns
  */
-const interpolateFrames: [number, number] = [40, 80]
 function interpolateAttribute(frame: number, range: Coordinates) {
-  return customInterpolate(frame, interpolateFrames, range)
+  return customInterpolate(frame, [transitionStart, transitionEnd], range)
 }
 
 function getExtents(data: Dataset) {
