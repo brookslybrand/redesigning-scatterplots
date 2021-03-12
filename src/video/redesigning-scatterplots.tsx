@@ -1,28 +1,61 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
+import { useCurrentFrame, useVideoConfig } from 'remotion'
 
-import CustomSequence from './components/custom-sequence'
+import { CustomSequence, customInterpolate } from './custom-remotion-utils'
 import {
   Citation,
   DataInkRatioFormula,
   Paragraph,
   Title,
 } from './components/text'
-import { useTextTransitionAttributes } from './components/text/hooks'
+import {
+  PlotContainer,
+  ScatterplotPoints,
+  AxesFull,
+  AxesFullToRange,
+  AxesRange,
+  AxesRangeToFull,
+  AxesRangeToQuartile,
+  AxesQuartile,
+  TicksFadeIn,
+  TicksToRange,
+  TicksFadeOut,
+  PlotLabel,
+  MinMaxLabels,
+} from './components/plots'
 import {
   dataInkTitle,
   dataInkText,
   scatterPlotTitle,
   scatterPlotText,
 } from './data/text'
-
-// Constants
-const widthHeightRatio = 36 / 51 // ratio of the width to the height as measured in the book
-const plotWidth = 700
+import { dataset1, dataset2, dataset3 } from './data/plot-data'
 
 export default function RedesigningScatterPlots() {
+  const frame = useCurrentFrame()
+  const { durationInFrames } = useVideoConfig()
+
+  const fadeOutStart = durationInFrames - 60
+
   return (
-    <article tw="w-full h-full bg-gray-yellow-200 flex flex-col items-center">
+    <article
+      css={[
+        tw`flex flex-col items-center w-full h-full bg-gray-yellow-200`,
+        // fade out all the children at the end
+        frame >= fadeOutStart
+          ? css`
+              * {
+                opacity: ${customInterpolate(
+                  frame,
+                  [fadeOutStart, durationInFrames],
+                  [1, 0]
+                )};
+              }
+            `
+          : null,
+      ]}
+    >
       <DataInkTextSequence />
       <RedesigningScatterplotsSequence />
       <Citation />
@@ -45,7 +78,7 @@ function DataInkTextSequence() {
           durationInFrames={dataInkDuration - 30}
           name="data-ink text"
         >
-          <Paragraph>
+          <Paragraph css={paragraphCss}>
             {dataInkText}
             <CustomSequence from={120} name="data ink ratio formula">
               <DataInkRatioFormula />
@@ -58,28 +91,13 @@ function DataInkTextSequence() {
 }
 
 const plotFadeIn = 40
-function PlotPlaceholder() {
-  const opacity = useTextTransitionAttributes(0, plotFadeIn)
-  return (
-    <div
-      css={[
-        tw`mt-16 mb-12 bg-transparent border-2 border-gray-red-400`,
-        css`
-          width: ${plotWidth}px;
-          height: ${plotWidth * widthHeightRatio}px;
-          opacity: ${opacity};
-        `,
-      ]}
-    />
-  )
-}
 
 // calculate when the paragraphs start and how long they will be
 const titleDuration = 150
+const textOverlap = 20
 const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
   const durationInFrames = 400
-  const overlap = 20
-  const from = plotFadeIn + (400 - overlap) * idx
+  const from = plotFadeIn + (durationInFrames - textOverlap) * idx
   return {
     text,
     from,
@@ -91,6 +109,7 @@ const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
 function RedesigningScatterplotsSequence() {
   return (
     <>
+      {/* title sequence */}
       <CustomSequence
         from={400}
         durationInFrames={titleDuration}
@@ -105,11 +124,123 @@ function RedesigningScatterplotsSequence() {
         name="scatterplot and text"
       >
         <Container>
-          <PlotPlaceholder />
+          {/* <PlotPlaceholder /> */}
+          {/* <Plot /> */}
+
+          {/* plot - only fade in on the first paragraph */}
+          <PlotContainer>
+            {/* initial plot */}
+            <CustomSequence
+              from={0}
+              durationInFrames={scatterplotTextSequenceProps[0].from}
+            >
+              <AxesFull />
+              <ScatterplotPoints data1={dataset1} />
+            </CustomSequence>
+
+            {scatterplotTextSequenceProps.map(
+              ({ from, durationInFrames }, idx) => {
+                const name = `plot ${idx}`
+                return (
+                  <CustomSequence
+                    key={name}
+                    from={from}
+                    // remove the overlap so the plot doesn't overlay itself
+                    durationInFrames={durationInFrames - textOverlap}
+                    name={name}
+                  >
+                    {(() => {
+                      switch (idx) {
+                        case 0: {
+                          return (
+                            <>
+                              <AxesFull />
+                              <ScatterplotPoints data1={dataset1} />
+                            </>
+                          )
+                        }
+                        case 1: {
+                          return (
+                            <>
+                              <AxesFullToRange data={dataset1} />
+                              <ScatterplotPoints data1={dataset1} />
+                            </>
+                          )
+                        }
+                        case 2: {
+                          return (
+                            <>
+                              <AxesRange data={dataset1} />
+                              <ScatterplotPoints data1={dataset1} />
+                              <MinMaxLabels data={dataset1} />
+                            </>
+                          )
+                        }
+                        case 3: {
+                          return (
+                            <>
+                              {/* use dataset 1 here for the axes so the transition is right */}
+                              <AxesRangeToFull data={dataset1} />
+                              <ScatterplotPoints
+                                data1={dataset1}
+                                data2={dataset2}
+                              />
+                              <TicksFadeIn />
+                              <PlotLabel>Conventional Scatterplot</PlotLabel>
+                            </>
+                          )
+                        }
+                        case 4: {
+                          return (
+                            <>
+                              <AxesFullToRange data={dataset2} />
+                              <ScatterplotPoints data1={dataset2} />
+                              <TicksToRange data={dataset2} />
+                              <PlotLabel>Range-Frame</PlotLabel>
+                            </>
+                          )
+                        }
+                        case 5: {
+                          return (
+                            <>
+                              {/* TODO: add transition for axes range */}
+                              <AxesRangeToQuartile
+                                data1={dataset2}
+                                data2={dataset3}
+                              />
+                              <ScatterplotPoints
+                                data1={dataset2}
+                                data2={dataset3}
+                              />
+                              {/* this is still dataset 2 since that's what it was in the previous sequence */}
+                              <TicksFadeOut data={dataset2} />
+                            </>
+                          )
+                        }
+                        case 6: {
+                          return (
+                            <>
+                              <AxesQuartile data={dataset3} />
+                              <ScatterplotPoints data1={dataset3} />
+                            </>
+                          )
+                        }
+                        default: {
+                          return null
+                        }
+                      }
+                    })()}
+                  </CustomSequence>
+                )
+              }
+            )}
+          </PlotContainer>
+
+          {/* text */}
           {scatterplotTextSequenceProps.map(({ text, ...props }) => {
             return (
               <CustomSequence key={props.name} {...props}>
-                <Paragraph>{text}</Paragraph>
+                <Paragraph css={paragraphCss}>{text}</Paragraph>
               </CustomSequence>
             )
           })}
@@ -119,19 +250,8 @@ function RedesigningScatterplotsSequence() {
   )
 }
 
-type ContainerProps = React.ComponentPropsWithoutRef<'section'>
-function Container(props: ContainerProps) {
-  return (
-    <section
-      css={[
-        tw`absolute`,
-        css`
-          min-width: ${plotWidth}px;
-        `,
-      ]}
-      {...props}
-    />
-  )
+function Container(props: React.ComponentPropsWithoutRef<'section'>) {
+  return <section css={[tw`absolute`]} {...props} />
 }
 
 export const totalDuration =
@@ -141,3 +261,7 @@ export const totalDuration =
       Math.max(totalDuration, from + durationInFrames),
     0
   )
+
+const paragraphCss = css`
+  width: 750px;
+`

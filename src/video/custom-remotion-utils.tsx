@@ -1,4 +1,6 @@
-import { Sequence } from 'remotion'
+import { interpolate, Easing, Sequence } from 'remotion'
+
+export { CustomSequence, customInterpolate }
 
 type CustomSequenceProps = {
   key?: React.Key
@@ -11,7 +13,7 @@ type CustomSequenceProps = {
 /**
  * Remotion Sequence but with good defaults
  */
-export default function CustomSequence({
+function CustomSequence({
   from,
   durationInFrames = Infinity,
   name,
@@ -28,4 +30,19 @@ export default function CustomSequence({
       {children}
     </Sequence>
   )
+}
+
+const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
+const interpolateConfig = {
+  easing: ease,
+  extrapolateLeft: 'clamp',
+  extrapolateRight: 'clamp',
+} as const
+
+function customInterpolate(
+  input: number,
+  inputRange: [number, number],
+  outputRange: [number, number]
+) {
+  return interpolate(input, inputRange, outputRange, interpolateConfig)
 }

@@ -1,8 +1,7 @@
-import { useCurrentFrame, interpolate, Easing, useVideoConfig } from 'remotion'
+import { useCurrentFrame, useVideoConfig } from 'remotion'
+import { customInterpolate } from '../../custom-remotion-utils'
 
 export { useTextTransitionAttributes }
-
-const ease = Easing.bezier(0.25, 0.1, 0.25, 1.0)
 
 function useTextTransitionAttributes(
   transformDuration: number,
@@ -19,27 +18,19 @@ function useTextTransitionAttributes(
     `)
   }
 
-  const interpolateConfig = {
-    easing: ease,
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  } as const
-
-  const y = interpolate(
+  const y = customInterpolate(
     frame,
     [0, transformDuration],
-    [200, 0], // pixels
-    interpolateConfig
+    [200, 0] // pixels
   )
 
   const opacity =
     frame < fadeOutStart
-      ? interpolate(frame, [0, fadeDuration], [0, 1], interpolateConfig)
-      : interpolate(
+      ? customInterpolate(frame, [0, fadeDuration], [0, 1])
+      : customInterpolate(
           frame,
           [fadeOutStart, fadeOutStart + fadeDuration],
-          [1, 0],
-          interpolateConfig
+          [1, 0]
         )
 
   return { y, opacity }
