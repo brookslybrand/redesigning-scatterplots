@@ -1,7 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
-
+import parse from 'html-react-parser'
 import { useTextTransitionAttributes } from './hooks'
+import { Children } from 'react'
 
 type ParagraphProps = {
   transformDuration?: number
@@ -22,15 +23,26 @@ export default function Paragraph({
   return (
     <p
       css={[
-        tw`absolute text-2xl font-light text-gray-900 font-body left-1/2`,
+        // tw`absolute text-2xl font-light text-gray-900 font-body left-1/2`,
+        tw`absolute text-2xl font-light text-gray-900 font-body`,
+        /* transform: translate(-50%, ${y}px); */
         css`
-          transform: translate(-50%, ${y}px);
           opacity: ${opacity};
+
+          em {
+            font-style: italic;
+          }
         `,
       ]}
       {...props}
     >
-      {children}
+      {Children.map(children, (child) => {
+        if (typeof child === 'string') {
+          return parse(child)
+        } else {
+          return child
+        }
+      })}
     </p>
   )
 }
