@@ -2,7 +2,7 @@
 import tw, { css } from 'twin.macro'
 import * as d3 from 'd3'
 
-import { dataset1, dataset2 } from '../../data/plot-data'
+import { dataset1 } from '../../data/plot-data'
 import { Easing, interpolate, useCurrentFrame } from 'remotion'
 
 type Coordinates = [number, number]
@@ -15,6 +15,8 @@ export {
   AxesFullToRange,
   AxesRangeToFull,
   AxesRange,
+  AxesRangeToQuartile,
+  AxesQuartile,
   TicksFadeIn,
   TicksToRange,
   TicksFadeOut,
@@ -98,7 +100,7 @@ function Plot() {
   return (
     <svg
       css={[
-        tw`mt-12 mb-12 `,
+        tw`mt-12 mb-12`,
         css`
           opacity: ${opacity};
         `,
@@ -107,8 +109,8 @@ function Plot() {
       height={svgHeight}
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
     >
-      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+      <path strokeWidth={1} d={xAxis} />
+      <path strokeWidth={1} d={yAxis} />
 
       {dataset1.map(([x, y]) => (
         <circle
@@ -159,7 +161,7 @@ function PlotContainer({ children }: { children: React.ReactNode }) {
   return (
     <svg
       css={[
-        tw`mt-12 mb-12`,
+        tw`mt-12 mb-12 stroke-gray-900 fill-gray-900 `,
         css`
           opacity: ${opacity};
         `,
@@ -190,7 +192,6 @@ function ScatterplotPoints({ data1, data2 }: ScatterplotPointsProps) {
         <circle
           key={`${cx}-${cy}`}
           css={[
-            tw`fill-gray-900`,
             css`
               opacity: ${opacity};
             `,
@@ -220,13 +221,15 @@ function AxesFull() {
 
   return (
     <>
-      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+      <path strokeWidth={1} d={xAxis} />
+      <path strokeWidth={1} d={yAxis} />
     </>
   )
 }
 
-function AxesFullToRange({ data }: { data: Dataset }) {
+type AxesProps = { data: Dataset }
+
+function AxesFullToRange({ data }: AxesProps) {
   const frame = useCurrentFrame()
   const extents = getExtents(data)
 
@@ -239,13 +242,13 @@ function AxesFullToRange({ data }: { data: Dataset }) {
 
   return (
     <>
-      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+      <path strokeWidth={1} d={xAxis} />
+      <path strokeWidth={1} d={yAxis} />
     </>
   )
 }
 
-function AxesRangeToFull({ data }: { data: Dataset }) {
+function AxesRangeToFull({ data }: AxesProps) {
   const frame = useCurrentFrame()
   const extents = getExtents(data)
 
@@ -258,18 +261,188 @@ function AxesRangeToFull({ data }: { data: Dataset }) {
 
   return (
     <>
-      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+      <path strokeWidth={1} d={xAxis} />
+      <path strokeWidth={1} d={yAxis} />
     </>
   )
 }
 
-function AxesRange({ data }: { data: Dataset }) {
+function AxesRange({ data }: AxesProps) {
   const { xAxis, yAxis } = createAxesLines(getExtents(data))
   return (
     <>
-      <path tw="stroke-gray-900" strokeWidth={1} d={xAxis} />
-      <path tw="stroke-gray-900" strokeWidth={1} d={yAxis} />
+      <path strokeWidth={1} d={xAxis} />
+      <path strokeWidth={1} d={yAxis} />
+    </>
+  )
+}
+
+function getQuartiles(data: number[]) {
+  return Array.from({ length: 4 }).map((_, quartile) => {
+    const start = d3.quantile(data, 0.25 * quartile)
+    const end = d3.quantile(data, 0.25 * (quartile + 1))
+    if (start === undefined || end === undefined) {
+      throw new Error('Something went wrong, start or end are undefined')
+    }
+    return { start, end }
+  })
+}
+
+const midpointOffset = 0.5
+const quartileAxisOffset = 5
+
+function AxesRangeToQuartile({
+  data1,
+  data2,
+}: Required<ScatterplotPointsProps>) {
+  const frame = useCurrentFrame()
+
+  const endOfDataSetTransition = interpolateFrames[0] + interpolateFrames[1]
+  const quartileTransitionFrame = frame - interpolateFrames[1] // start after axes transition is done
+  const translate = interpolateAttribute(quartileTransitionFrame, [
+    0,
+    quartileAxisOffset,
+  ])
+  const midpointOffsetTransition = interpolateAttribute(
+    quartileTransitionFrame,
+    [0, midpointOffset]
+  )
+
+  const extents1 = getExtents(data1)
+  const extents2 = getExtents(data2)
+
+  const minX = interpolateAttribute(frame, [extents1.minX, extents2.minX])
+  const maxX = interpolateAttribute(frame, [extents1.maxX, extents2.maxX])
+  const minY = interpolateAttribute(frame, [extents1.minY, extents2.minY])
+  const maxY = interpolateAttribute(frame, [extents1.maxY, extents2.maxY])
+
+  const { xAxis, yAxis } = createAxesLines({ minX, minY, maxX, maxY })
+
+  const xQuartiles = getQuartiles(data2.map(([x]) => x))
+  const yQuartiles = getQuartiles(data2.map(([, y]) => y))
+
+  return (
+    <>
+      {/* transition between the two axes first, then transition to quartiles */}
+      {frame < endOfDataSetTransition ? (
+        <>
+          <path strokeWidth={1} d={xAxis} />
+          <path strokeWidth={1} d={yAxis} />
+        </>
+      ) : (
+        <>
+          {xQuartiles.map(({ start, end }, quartile) => {
+            const q2 = quartile === 1
+            const q3 = quartile === 2
+            const { xAxis } = createAxesLines({
+              // add some space between the 2nd and 3rd quartile to show the mid point
+              minX: q3 ? start + midpointOffsetTransition : start,
+              maxX: q2 ? end - midpointOffsetTransition : end,
+              minY: 0,
+              maxY: 0,
+            })
+            return (
+              <path
+                key={quartile}
+                css={[
+                  q2 || q3
+                    ? css`
+                        transform: translateY(-${translate}px);
+                      `
+                    : null,
+                ]}
+                strokeWidth={1}
+                d={xAxis}
+              />
+            )
+          })}
+          {yQuartiles.map(({ start, end }, quartile) => {
+            const q2 = quartile === 1
+            const q3 = quartile === 2
+            const { yAxis } = createAxesLines({
+              // add some space between the 2nd and 3rd quartile to show the mid point
+              minX: 0,
+              maxX: 0,
+              minY: q3 ? start + midpointOffsetTransition : start,
+              maxY: q2 ? end - midpointOffsetTransition : end,
+            })
+            return (
+              <path
+                key={quartile}
+                css={[
+                  q2 || q3
+                    ? css`
+                        transform: translateX(${translate}px);
+                      `
+                    : null,
+                ]}
+                strokeWidth={1}
+                d={yAxis}
+              />
+            )
+          })}
+        </>
+      )}
+    </>
+  )
+}
+
+function AxesQuartile({ data }: AxesProps) {
+  const xQuartiles = getQuartiles(data.map(([x]) => x))
+  const yQuartiles = getQuartiles(data.map(([, y]) => y))
+
+  return (
+    <>
+      {xQuartiles.map(({ start, end }, quartile) => {
+        const q2 = quartile === 1
+        const q3 = quartile === 2
+        const { xAxis } = createAxesLines({
+          // add some space between the 2nd and 3rd quartile to show the mid point
+          minX: q3 ? start + midpointOffset : start,
+          maxX: q2 ? end - midpointOffset : end,
+          minY: 0,
+          maxY: 0,
+        })
+        return (
+          <path
+            key={quartile}
+            css={[
+              q2 || q3
+                ? css`
+                    transform: translateY(-${quartileAxisOffset}px);
+                  `
+                : null,
+            ]}
+            strokeWidth={1}
+            d={xAxis}
+          />
+        )
+      })}
+      {yQuartiles.map(({ start, end }, quartile) => {
+        const q2 = quartile === 1
+        const q3 = quartile === 2
+        const { yAxis } = createAxesLines({
+          // add some space between the 2nd and 3rd quartile to show the mid point
+          minX: 0,
+          maxX: 0,
+          minY: q3 ? start + midpointOffset : start,
+          maxY: q2 ? end - midpointOffset : end,
+        })
+        return (
+          <path
+            key={quartile}
+            css={[
+              q2 || q3
+                ? css`
+                    transform: translateX(${quartileAxisOffset}px);
+                  `
+                : null,
+            ]}
+            strokeWidth={1}
+            d={yAxis}
+          />
+        )
+      })}
     </>
   )
 }
@@ -322,14 +495,14 @@ function TicksFadeOut({ data }: { data: Dataset }) {
   )
 }
 
-type Ticks = { d: string; opacity: number }[]
+type TicksAttributes = { d: string; opacity: number }[]
 type TicksProps = {
-  xTicks: Ticks
-  yTicks: Ticks
+  xTicks: TicksAttributes
+  yTicks: TicksAttributes
 } & React.ComponentPropsWithoutRef<'g'>
 function Ticks({ xTicks, yTicks, ...props }: TicksProps) {
   return (
-    <g tw="stroke-gray-900" {...props}>
+    <g {...props}>
       {xTicks.map(({ d, opacity }) => (
         <path
           key={d}
@@ -419,8 +592,9 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
  * @param range
  * @returns
  */
+const interpolateFrames: [number, number] = [40, 80]
 function interpolateAttribute(frame: number, range: Coordinates) {
-  return interpolate(frame, [40, 80], range, interpolateConfig)
+  return interpolate(frame, interpolateFrames, range, interpolateConfig)
 }
 
 function getExtents(data: Dataset) {

@@ -15,6 +15,8 @@ import {
   AxesFullToRange,
   AxesRange,
   AxesRangeToFull,
+  AxesRangeToQuartile,
+  AxesQuartile,
   TicksFadeIn,
   TicksToRange,
   TicksFadeOut,
@@ -25,7 +27,7 @@ import {
   scatterPlotTitle,
   scatterPlotText,
 } from './data/text'
-import { dataset1, dataset2 } from './data/plot-data'
+import { dataset1, dataset2, dataset3 } from './data/plot-data'
 
 export default function RedesigningScatterPlots() {
   return (
@@ -70,7 +72,7 @@ const plotFadeIn = 40
 const titleDuration = 150
 const textOverlap = 20
 const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
-  const durationInFrames = 200 // 400
+  const durationInFrames = 400
   const from = plotFadeIn + (durationInFrames - textOverlap) * idx
   return {
     text,
@@ -174,8 +176,16 @@ function RedesigningScatterplotsSequence() {
                         case 5: {
                           return (
                             <>
-                              <AxesRange data={dataset2} />
-                              <ScatterplotPoints data1={dataset2} />
+                              {/* TODO: add transition for axes range */}
+                              <AxesRangeToQuartile
+                                data1={dataset2}
+                                data2={dataset3}
+                              />
+                              <ScatterplotPoints
+                                data1={dataset2}
+                                data2={dataset3}
+                              />
+                              {/* this is still dataset 2 since that's what it was in the previous sequence */}
                               <TicksFadeOut data={dataset2} />
                             </>
                           )
@@ -183,9 +193,8 @@ function RedesigningScatterplotsSequence() {
                         case 6: {
                           return (
                             <>
-                              {/* TODO: change to AxesQuartile */}
-                              <AxesRange data={dataset2} />
-                              <ScatterplotPoints data1={dataset2} />
+                              <AxesQuartile data={dataset3} />
+                              <ScatterplotPoints data1={dataset3} />
                             </>
                           )
                         }
