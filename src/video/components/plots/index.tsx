@@ -15,8 +15,8 @@ export {
   AxesFullToRange,
   AxesRangeToFull,
   AxesRange,
-  Ticks,
   TicksFadeIn,
+  TicksToRange,
   TicksFadeOut,
 }
 
@@ -274,13 +274,62 @@ function AxesRange({ data }: { data: Dataset }) {
   )
 }
 
-function Ticks({ data }: { data: Dataset }) {
+function TicksFadeIn() {
+  const frame = useCurrentFrame()
+  const opacity = interpolateAttribute(frame, [0, 1])
+
+  const xTickPaths = createXTickPaths()
+  const yTickPaths = createYTickPaths()
+
+  return (
+    <Ticks
+      css={[
+        css`
+          opacity: ${opacity};
+        `,
+      ]}
+      xTicks={xTickPaths.map((d) => ({ d, opacity: 1 }))}
+      yTicks={yTickPaths.map((d) => ({ d, opacity: 1 }))}
+    />
+  )
+}
+
+function TicksToRange({ data }: { data: Dataset }) {
   const { minX, minY } = getExtents(data)
   const xTicks = useMergeTicks(createXTickPaths(), createXTickPaths({ minX }))
   const yTicks = useMergeTicks(createYTickPaths(), createYTickPaths({ minY }))
 
+  return <Ticks xTicks={xTicks} yTicks={yTicks} />
+}
+
+function TicksFadeOut({ data }: { data: Dataset }) {
+  const frame = useCurrentFrame()
+  const opacity = interpolate(frame, [0, 40], [1, 0], interpolateConfig)
+  const { minX, minY } = getExtents(data)
+  const xTickPaths = createXTickPaths({ minX })
+  const yTickPaths = createYTickPaths({ minY })
+
   return (
-    <g css={[tw`stroke-gray-900`]}>
+    <Ticks
+      css={[
+        css`
+          opacity: ${opacity};
+        `,
+      ]}
+      xTicks={xTickPaths.map((d) => ({ d, opacity: 1 }))}
+      yTicks={yTickPaths.map((d) => ({ d, opacity: 1 }))}
+    />
+  )
+}
+
+type Ticks = { d: string; opacity: number }[]
+type TicksProps = {
+  xTicks: Ticks
+  yTicks: Ticks
+} & React.ComponentPropsWithoutRef<'g'>
+function Ticks({ xTicks, yTicks, ...props }: TicksProps) {
+  return (
+    <g tw="stroke-gray-900" {...props}>
       {xTicks.map(({ d, opacity }) => (
         <path
           key={d}
@@ -300,58 +349,6 @@ function Ticks({ data }: { data: Dataset }) {
           strokeWidth={1}
           d={d}
         />
-      ))}
-    </g>
-  )
-}
-
-function TicksFadeIn() {
-  const frame = useCurrentFrame()
-  const opacity = interpolateAttribute(frame, [0, 1])
-
-  const xTickPaths = createXTickPaths()
-  const yTickPaths = createYTickPaths()
-
-  return (
-    <g
-      css={[
-        tw`stroke-gray-900`,
-        css`
-          opacity: ${opacity};
-        `,
-      ]}
-    >
-      {xTickPaths.map((d) => (
-        <path key={d} strokeWidth={1} d={d} />
-      ))}
-      {yTickPaths.map((d) => (
-        <path key={d} strokeWidth={1} d={d} />
-      ))}
-    </g>
-  )
-}
-
-function TicksFadeOut({ data }: { data: Dataset }) {
-  const frame = useCurrentFrame()
-  const opacity = interpolate(frame, [0, 40], [1, 0], interpolateConfig)
-  const { minX, minY } = getExtents(data)
-  const xTickPaths = createXTickPaths({ minX })
-  const yTickPaths = createYTickPaths({ minY })
-
-  return (
-    <g
-      css={[
-        tw`stroke-gray-900`,
-        css`
-          opacity: ${opacity};
-        `,
-      ]}
-    >
-      {xTickPaths.map((d) => (
-        <path key={d} strokeWidth={1} d={d} />
-      ))}
-      {yTickPaths.map((d) => (
-        <path key={d} strokeWidth={1} d={d} />
       ))}
     </g>
   )

@@ -16,8 +16,8 @@ import {
   AxesRange,
   AxesRangeToFull,
   TicksFadeIn,
+  TicksToRange,
   TicksFadeOut,
-  Ticks,
 } from './components/plots'
 import {
   dataInkTitle,
@@ -70,8 +70,8 @@ const plotFadeIn = 40
 const titleDuration = 150
 const textOverlap = 20
 const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
-  const durationInFrames = 400
-  const from = plotFadeIn + (400 - textOverlap) * idx
+  const durationInFrames = 200 // 400
+  const from = plotFadeIn + (durationInFrames - textOverlap) * idx
   return {
     text,
     from,
@@ -167,7 +167,7 @@ function RedesigningScatterplotsSequence() {
                             <>
                               <AxesFullToRange data={dataset2} />
                               <ScatterplotPoints data1={dataset2} />
-                              <Ticks data={dataset2} />
+                              <TicksToRange data={dataset2} />
                             </>
                           )
                         }
