@@ -65,23 +65,22 @@ export default function RedesigningScatterPlots() {
 
 // give some breathing room before beginning to show everything
 const startDelay = 30
-const dataInkDuration = 620
 function DataInkTextSequence() {
   return (
     <CustomSequence
       from={startDelay}
-      durationInFrames={dataInkDuration}
+      durationInFrames={dataInkText.duration}
       name="data-ink title and text"
     >
       <Container>
         <Title tw="my-24 text-center">{dataInkTitle}</Title>
         <CustomSequence
           from={40}
-          durationInFrames={dataInkDuration - 40}
+          durationInFrames={dataInkText.duration - 40}
           name="data-ink text"
         >
           <Paragraph css={paragraphCss}>
-            {dataInkText}
+            {dataInkText.text}
             <CustomSequence from={250} name="data ink ratio formula">
               <DataInkRatioFormula />
             </CustomSequence>
@@ -92,28 +91,30 @@ function DataInkTextSequence() {
   )
 }
 
-const plotFadeIn = 40
-
 // calculate when the paragraphs start and how long they will be
 const titleDuration = 150
 const textOverlap = 20
-const scatterplotTextSequenceProps = scatterPlotText.map((text, idx) => {
-  const durationInFrames = 400
-  const from = plotFadeIn + (durationInFrames - textOverlap) * idx
-  return {
-    text,
-    from,
-    durationInFrames,
-    name: `redesigning scatterplots text ${idx + 1}`,
+let previousEnd = 40
+const scatterplotTextSequenceProps = scatterPlotText.map(
+  ({ text, duration }, idx) => {
+    const durationInFrames = duration
+    const from = previousEnd - textOverlap
+    previousEnd = from + durationInFrames
+    return {
+      text,
+      from,
+      durationInFrames,
+      name: `redesigning scatterplots text ${idx + 1}`,
+    }
   }
-})
+)
 
 function RedesigningScatterplotsSequence() {
   return (
     <>
       {/* title sequence */}
       <CustomSequence
-        from={startDelay + dataInkDuration}
+        from={startDelay + dataInkText.duration}
         durationInFrames={titleDuration}
         name="redesigning scatterplots title"
       >
@@ -122,7 +123,7 @@ function RedesigningScatterplotsSequence() {
         </Container>
       </CustomSequence>
       <CustomSequence
-        from={startDelay + dataInkDuration + titleDuration - 30}
+        from={startDelay + dataInkText.duration + titleDuration - 30}
         name="scatterplot and text"
       >
         <Container>
@@ -258,7 +259,7 @@ function Container(props: React.ComponentPropsWithoutRef<'section'>) {
 
 export const totalDuration =
   startDelay +
-  dataInkDuration +
+  dataInkText.duration +
   scatterplotTextSequenceProps.reduce(
     (totalDuration, { from, durationInFrames }) =>
       Math.max(totalDuration, from + durationInFrames),
