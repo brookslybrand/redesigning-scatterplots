@@ -13,6 +13,11 @@ import {
   ScatterplotPoints,
   AxesFull,
   AxesFullToRange,
+  AxesRange,
+  AxesRangeToFull,
+  TicksFadeIn,
+  TicksFadeOut,
+  Ticks,
 } from './components/plots'
 import {
   dataInkTitle,
@@ -108,13 +113,15 @@ function RedesigningScatterplotsSequence() {
             </CustomSequence>
 
             {scatterplotTextSequenceProps.map(
-              ({ text, from, durationInFrames }, idx) => {
+              ({ from, durationInFrames }, idx) => {
+                const name = `plot ${idx}`
                 return (
                   <CustomSequence
+                    key={name}
                     from={from}
                     // remove the overlap so the plot doesn't overlay itself
                     durationInFrames={durationInFrames - textOverlap}
-                    name={`plot ${idx}`}
+                    name={name}
                   >
                     {(() => {
                       switch (idx) {
@@ -129,7 +136,7 @@ function RedesigningScatterplotsSequence() {
                         case 1: {
                           return (
                             <>
-                              <AxesFull />
+                              <AxesFullToRange data={dataset1} />
                               <ScatterplotPoints data1={dataset1} />
                             </>
                           )
@@ -137,7 +144,7 @@ function RedesigningScatterplotsSequence() {
                         case 2: {
                           return (
                             <>
-                              <AxesFull />
+                              <AxesRange data={dataset1} />
                               <ScatterplotPoints data1={dataset1} />
                             </>
                           )
@@ -145,34 +152,39 @@ function RedesigningScatterplotsSequence() {
                         case 3: {
                           return (
                             <>
-                              <AxesFull />
+                              {/* use dataset 1 here for the axes so the transition is right */}
+                              <AxesRangeToFull data={dataset1} />
                               <ScatterplotPoints
                                 data1={dataset1}
                                 data2={dataset2}
                               />
+                              <TicksFadeIn />
                             </>
                           )
                         }
                         case 4: {
                           return (
                             <>
-                              <AxesFull />
+                              <AxesFullToRange data={dataset2} />
                               <ScatterplotPoints data1={dataset2} />
+                              <Ticks data={dataset2} />
                             </>
                           )
                         }
                         case 5: {
                           return (
                             <>
-                              <AxesFull />
+                              <AxesRange data={dataset2} />
                               <ScatterplotPoints data1={dataset2} />
+                              <TicksFadeOut data={dataset2} />
                             </>
                           )
                         }
                         case 6: {
                           return (
                             <>
-                              <AxesFull />
+                              {/* TODO: change to AxesQuartile */}
+                              <AxesRange data={dataset2} />
                               <ScatterplotPoints data1={dataset2} />
                             </>
                           )
