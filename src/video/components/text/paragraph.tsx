@@ -23,9 +23,10 @@ export default function Paragraph({
   return (
     <p
       css={[
-        tw`absolute text-2xl font-light text-gray-900 font-body left-1/2`,
+        // tw`absolute text-2xl font-light text-gray-900 font-body left-1/2`,
+        tw`absolute text-2xl font-light text-gray-900 font-body`,
+        /* transform: translate(-50%, ${y}px); */
         css`
-          transform: translate(-50%, ${y}px);
           opacity: ${opacity};
 
           em {

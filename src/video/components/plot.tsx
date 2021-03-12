@@ -3,7 +3,7 @@ import tw, { css, theme } from 'twin.macro'
 import { useCurrentFrame, useVideoConfig } from 'remotion'
 import * as d3 from 'd3'
 
-import { customInterpolate } from '../../custom-remotion-utils'
+import { customInterpolate } from '../custom-remotion-utils'
 import React from 'react'
 
 type Coordinates = [number, number]
@@ -64,7 +64,7 @@ function PlotContainer({ children }: { children: React.ReactNode }) {
   return (
     <svg
       css={[
-        tw`mt-12 mb-12 text-xl font-light text-gray-900 stroke-gray-900 fill-gray-900 font-body`,
+        tw`relative mt-4 text-xl font-light text-gray-900 stroke-gray-900 fill-gray-900 font-body`,
         css`
           opacity: ${opacity};
         `,

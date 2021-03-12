@@ -18,7 +18,10 @@ export const scatterPlotText = [
       'The result, a <em>range-frame</em>, explicitly shows the maximum and minimum of both variables plotted (along with the range), information available only by extrapolation and visual estimation in the conventional design. The data-ink ratio has increased: some non-data-ink has been erased, and the remainder of the frame, now carrying information, has gone over to the side of data-ink.',
     duration: 500,
   },
-  { text: 'Nothing but the tails of the frame need change:', duration: 150 },
+  {
+    text: 'Nothing but the tails of the frame need change:',
+    duration: 200,
+  },
   {
     text:
       'A range-frame does not require any viewing or decoding instructions; it is not a graphical puzzle and most viewers can easily tell what is going on. Since it is more informative about the data in a clear and precise manner, the range-frame should replace the non-data-bearing frame in many graphical applications.',
