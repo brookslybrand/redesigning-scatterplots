@@ -41,7 +41,7 @@ function DataInkRatioFormulaGrid({
   return (
     <span
       css={[
-        tw`grid items-center gap-x-4 gap-y-4`,
+        tw`grid items-center mt-8 gap-x-4 gap-y-12`,
         css`
           opacity: ${opacity};
           grid-template-columns: min-content min-content auto;

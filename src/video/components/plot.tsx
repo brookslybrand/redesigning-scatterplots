@@ -39,7 +39,7 @@ const numberOfYTicks = 7
 const fontSize = parseFloat(theme(`fontSize.xl`)) * 16
 
 // values to keep all of the transition in sync
-const transitionStart = 40
+const transitionStart = 60
 const transitionDuration = 40
 const transitionEnd = transitionStart + transitionDuration
 
