@@ -51,7 +51,7 @@ function DataInkTextSequence() {
       name="data-ink title and text"
     >
       <Container>
-        <Title tw="my-24 text-center" fadeDuration={-1}>
+        <Title tw="my-24 text-center" fadeInDuration={-1}>
           {dataInkTitle}
         </Title>
         <CustomSequence
@@ -76,7 +76,7 @@ function DataInkTextSequence() {
 // calculate when the paragraphs start and how long they will be
 const titleDuration = 150
 const textOverlap = 20
-let previousEnd = 40
+let previousEnd = 21
 const scatterplotTextSequenceProps = scatterPlotText.map(
   ({ text, duration }, idx) => {
     const durationInFrames = duration

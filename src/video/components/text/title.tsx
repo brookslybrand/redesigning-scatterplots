@@ -1,18 +1,38 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css } from 'twin.macro'
-
-import { useTextTransitionAttributes } from './hooks'
+import { useCurrentFrame, useVideoConfig } from 'remotion'
+import { customInterpolate } from '../../custom-remotion-utils'
 
 type TitleProps = {
-  fadeDuration?: number
+  fadeInDuration?: number
+  fadeOutDuration?: number
 } & React.ComponentPropsWithoutRef<'h1'>
 
 export default function Title({
-  fadeDuration = 60,
+  fadeInDuration = 60,
+  fadeOutDuration = 60,
   children,
   ...props
 }: TitleProps) {
-  const { opacity } = useTextTransitionAttributes(fadeDuration)
+  const frame = useCurrentFrame()
+  const { durationInFrames } = useVideoConfig() // paragraph exists as long as the duration
+  const fadeOutStart = durationInFrames - fadeOutDuration
+  if (fadeOutStart < fadeOutDuration) {
+    throw new Error(`
+    Not enough time allotted to transform or fade out.
+    Fade out start: ${fadeOutStart}
+    `)
+  }
+
+  const opacity =
+    frame < fadeOutStart
+      ? customInterpolate(frame, [0, fadeInDuration], [0, 1])
+      : customInterpolate(
+          frame,
+          [fadeOutStart, fadeOutStart + fadeOutDuration],
+          [1, 0]
+        )
+
   return (
     <h1
       css={[

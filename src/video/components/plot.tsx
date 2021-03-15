@@ -59,7 +59,7 @@ const line = d3
 
 function PlotContainer({ children }: { children: React.ReactNode }) {
   const frame = useCurrentFrame()
-  const opacity = customInterpolate(frame, [0, transitionDuration], [0, 1])
+  const opacity = customInterpolate(frame, [0, 100], [0, 1])
 
   return (
     <svg
