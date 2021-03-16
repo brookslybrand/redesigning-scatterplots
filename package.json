@@ -3,14 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test": "jest --watch",
-    "analyze": "cross-env ANALYZE=true npm run build",
-    "remotion": "remotion preview src/video/index.tsx",
-    "remotion:build": "remotion render src/video/index.tsx redesigning-scatterplots src/video/redesigning-scatterplots.mp4 --overwrite"
+    "start": "remotion preview src/index.tsx",
+    "build": "remotion render src/index.tsx redesigning-scatterplots src/redesigning-scatterplots.mp4 --overwrite"
   },
   "husky": {
     "hooks": {
@@ -25,7 +21,6 @@
     "clsx": "^1.1.1",
     "d3": "^6.6.0",
     "html-react-parser": "^1.2.4",
-    "next": "^10.0.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "remotion": "^1.5.3",
@@ -35,7 +30,6 @@
   "devDependencies": {
     "@babel/core": "^7.12.13",
     "@emotion/babel-plugin": "^11.2.0",
-    "@next/bundle-analyzer": "^10.0.6",
     "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",

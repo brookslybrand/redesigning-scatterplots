@@ -38,4 +38,4 @@ out_publish/
 /brotli
 /py-zopfli
 /woff2
-src/video/redesigning-scatterplots.mp4
+src/**/*.mp4
