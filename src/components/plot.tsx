@@ -1,7 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import tw, { css, theme } from 'twin.macro'
 import { useCurrentFrame, useVideoConfig } from 'remotion'
-import * as d3 from 'd3'
+import { scaleLinear } from 'd3-scale'
+import { line as d3Line } from 'd3-shape'
+import { extent, quantile } from 'd3-array'
 
 import { customInterpolate } from '../custom-remotion-utils'
 import React from 'react'
@@ -42,16 +44,13 @@ const fontSize = parseFloat(theme(`fontSize.xl`)) * 16
 const transitionDuration = 40
 
 // assume that the data points are in a range from 0-100
-const xScale = d3
-  .scaleLinear()
+const xScale = scaleLinear()
   .domain([0, 100])
   .range([plotMargin.left, plotWidth + plotMargin.left])
-const yScale = d3
-  .scaleLinear()
+const yScale = scaleLinear()
   .domain([0, 100])
   .range([plotHeight + plotMargin.top, plotMargin.top])
-const line = d3
-  .line()
+const line = d3Line()
   .x(([x]) => xScale(x))
   .y(([, y]) => yScale(y))
 
@@ -184,8 +183,8 @@ function AxesRange({ data }: AxesProps) {
 
 function getQuartiles(data: number[]) {
   return Array.from({ length: 4 }).map((_, quartile) => {
-    const start = d3.quantile(data, 0.25 * quartile)
-    const end = d3.quantile(data, 0.25 * (quartile + 1))
+    const start = quantile(data, 0.25 * quartile)
+    const end = quantile(data, 0.25 * (quartile + 1))
     if (start === undefined || end === undefined) {
       throw new Error('Something went wrong, start or end are undefined')
     }
@@ -732,8 +731,8 @@ function interpolateAttribute(
 }
 
 function getExtents(data: Dataset) {
-  const [minX, maxX] = d3.extent(data.map(([x]) => x))
-  const [minY, maxY] = d3.extent(data.map(([, y]) => y))
+  const [minX, maxX] = extent(data.map(([x]) => x))
+  const [minY, maxY] = extent(data.map(([, y]) => y))
   if (
     minX === undefined ||
     maxX === undefined ||
