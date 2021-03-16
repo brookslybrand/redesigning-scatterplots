@@ -27,10 +27,10 @@ export {
 
 // constants
 
-const plotMargin = { top: 0, right: 292, bottom: 38, left: 180 }
+const plotMargin = { top: 0, right: 322, bottom: 38, left: 180 }
 const heightToWidthRatio = 36 / 51 // ratio of the width to the height as measured in the book
 
-const svgWidth = 1300
+const svgWidth = 1400
 const plotWidth = svgWidth - plotMargin.right - plotMargin.left // 700
 const plotHeight = plotWidth * heightToWidthRatio
 const svgHeight = plotHeight + plotMargin.top + plotMargin.bottom
@@ -39,9 +39,7 @@ const numberOfYTicks = 7
 const fontSize = parseFloat(theme(`fontSize.xl`)) * 16
 
 // values to keep all of the transition in sync
-const transitionStart = 60
 const transitionDuration = 40
-const transitionEnd = transitionStart + transitionDuration
 
 // assume that the data points are in a range from 0-100
 const xScale = d3
@@ -86,8 +84,12 @@ type ScatterplotPointsProps = {
  * Create the scatterplot points
  * If a second dataset is provided, the points will automatically be transitioned
  */
-function ScatterplotPoints({ data1, data2 }: ScatterplotPointsProps) {
-  const data = useMergeScatterplotPoints(data1, data2)
+function ScatterplotPoints({
+  startTransition,
+  data1,
+  data2,
+}: ScatterplotPointsProps & Pick<AxesProps, 'startTransition'>) {
+  const data = useMergeScatterplotPoints(startTransition, data1, data2)
 
   return (
     <>
@@ -130,16 +132,16 @@ function AxesFull() {
   )
 }
 
-type AxesProps = { data: Dataset }
+type AxesProps = { startTransition: number; data: Dataset }
 
-function AxesFullToRange({ data }: AxesProps) {
+function AxesFullToRange({ startTransition, data }: AxesProps) {
   const frame = useCurrentFrame()
   const extents = getExtents(data)
 
-  const minX = interpolateAttribute(frame, [0, extents.minX])
-  const maxX = interpolateAttribute(frame, [100, extents.maxX])
-  const minY = interpolateAttribute(frame, [0, extents.minY])
-  const maxY = interpolateAttribute(frame, [100, extents.maxY])
+  const minX = interpolateAttribute(frame, startTransition, [0, extents.minX])
+  const maxX = interpolateAttribute(frame, startTransition, [100, extents.maxX])
+  const minY = interpolateAttribute(frame, startTransition, [0, extents.minY])
+  const maxY = interpolateAttribute(frame, startTransition, [100, extents.maxY])
 
   const { xAxis, yAxis } = createAxesLines({ minX, minY, maxX, maxY })
 
@@ -151,14 +153,14 @@ function AxesFullToRange({ data }: AxesProps) {
   )
 }
 
-function AxesRangeToFull({ data }: AxesProps) {
+function AxesRangeToFull({ startTransition, data }: AxesProps) {
   const frame = useCurrentFrame()
   const extents = getExtents(data)
 
-  const minX = interpolateAttribute(frame, [extents.minX, 0])
-  const maxX = interpolateAttribute(frame, [extents.maxX, 100])
-  const minY = interpolateAttribute(frame, [extents.minY, 0])
-  const maxY = interpolateAttribute(frame, [extents.maxY, 100])
+  const minX = interpolateAttribute(frame, startTransition, [extents.minX, 0])
+  const maxX = interpolateAttribute(frame, startTransition, [extents.maxX, 100])
+  const minY = interpolateAttribute(frame, startTransition, [extents.minY, 0])
+  const maxY = interpolateAttribute(frame, startTransition, [extents.maxY, 100])
 
   const { xAxis, yAxis } = createAxesLines({ minX, minY, maxX, maxY })
 
@@ -194,28 +196,45 @@ function getQuartiles(data: number[]) {
 const midpointOffset = 0.5
 const quartileAxisOffset = 5
 
+type AxesRangeToQuartileProps = {
+  startTransition: number
+} & Required<ScatterplotPointsProps>
 function AxesRangeToQuartile({
+  startTransition,
   data1,
   data2,
-}: Required<ScatterplotPointsProps>) {
+}: AxesRangeToQuartileProps) {
   const frame = useCurrentFrame()
-  const quartileTransitionFrame = frame - transitionEnd // start after axes transition is done
-  const translate = interpolateAttribute(quartileTransitionFrame, [
+  const quartileTransitionStart = startTransition + transitionDuration // start after the axes transition is done
+  const translate = interpolateAttribute(frame, quartileTransitionStart, [
     0,
     quartileAxisOffset,
   ])
   const midpointOffsetTransition = interpolateAttribute(
-    quartileTransitionFrame,
+    frame,
+    quartileTransitionStart,
     [0, midpointOffset]
   )
 
   const extents1 = getExtents(data1)
   const extents2 = getExtents(data2)
 
-  const minX = interpolateAttribute(frame, [extents1.minX, extents2.minX])
-  const maxX = interpolateAttribute(frame, [extents1.maxX, extents2.maxX])
-  const minY = interpolateAttribute(frame, [extents1.minY, extents2.minY])
-  const maxY = interpolateAttribute(frame, [extents1.maxY, extents2.maxY])
+  const minX = interpolateAttribute(frame, startTransition, [
+    extents1.minX,
+    extents2.minX,
+  ])
+  const maxX = interpolateAttribute(frame, startTransition, [
+    extents1.maxX,
+    extents2.maxX,
+  ])
+  const minY = interpolateAttribute(frame, startTransition, [
+    extents1.minY,
+    extents2.minY,
+  ])
+  const maxY = interpolateAttribute(frame, startTransition, [
+    extents1.maxY,
+    extents2.maxY,
+  ])
 
   const { xAxis, yAxis } = createAxesLines({ minX, minY, maxX, maxY })
 
@@ -225,7 +244,7 @@ function AxesRangeToQuartile({
   return (
     <>
       {/* transition between the two axes first, then transition to quartiles */}
-      {frame < transitionEnd ? (
+      {frame < startTransition + transitionDuration ? (
         <>
           <path strokeWidth={1} d={xAxis} />
           <path strokeWidth={1} d={yAxis} />
@@ -348,9 +367,9 @@ function AxesQuartile({ data }: AxesProps) {
   )
 }
 
-function TicksFadeIn() {
+function TicksFadeIn({ startTransition }: Pick<AxesProps, 'startTransition'>) {
   const frame = useCurrentFrame()
-  const opacity = interpolateAttribute(frame, [0, 1])
+  const opacity = interpolateAttribute(frame, startTransition, [0, 1])
 
   const xTickPaths = createXTickPaths()
   const yTickPaths = createYTickPaths()
@@ -368,10 +387,18 @@ function TicksFadeIn() {
   )
 }
 
-function TicksToRange({ data }: { data: Dataset }) {
+function TicksToRange({ startTransition, data }: AxesProps) {
   const { minX, minY } = getExtents(data)
-  const xTicks = useMergeTicks(createXTickPaths(), createXTickPaths({ minX }))
-  const yTicks = useMergeTicks(createYTickPaths(), createYTickPaths({ minY }))
+  const xTicks = useMergeTicks(
+    startTransition,
+    createXTickPaths(),
+    createXTickPaths({ minX })
+  )
+  const yTicks = useMergeTicks(
+    startTransition,
+    createYTickPaths(),
+    createYTickPaths({ minY })
+  )
 
   return <Ticks xTicks={xTicks} yTicks={yTicks} />
 }
@@ -428,15 +455,24 @@ function Ticks({ xTicks, yTicks, ...props }: TicksProps) {
   )
 }
 
-function PlotLabel({ children }: { children: React.ReactNode }) {
+type PlotLabelProps = Pick<AxesProps, 'startTransition'> & {
+  children: React.ReactNode
+}
+function PlotLabel({ startTransition, children }: PlotLabelProps) {
   return (
-    <Label x={xScale(105)} y={yScale(0)} alignmentBaseline="middle">
+    <Label
+      startTransition={startTransition}
+      x={xScale(105)}
+      y={yScale(100)}
+      alignmentBaseline="hanging"
+      tw="text-2xl"
+    >
       {children}
     </Label>
   )
 }
 
-function MinMaxLabels({ data }: AxesProps) {
+function MinMaxLabels({ startTransition, data }: AxesProps) {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig()
   const extents = getExtents(data)
@@ -454,9 +490,10 @@ function MinMaxLabels({ data }: AxesProps) {
         opacity: ${opacity};
       `}
     >
-      <MinMaxLines data={data} {...extents} />
+      <MinMaxLines startTransition={startTransition} data={data} {...extents} />
 
       <LabelWithSubscript
+        startTransition={startTransition}
         x={xScale(minX)}
         y={yScale(-2)}
         textAnchor="middle"
@@ -465,6 +502,7 @@ function MinMaxLabels({ data }: AxesProps) {
         min X
       </LabelWithSubscript>
       <LabelWithSubscript
+        startTransition={startTransition}
         x={xScale(maxX)}
         y={yScale(-2)}
         textAnchor="middle"
@@ -474,6 +512,7 @@ function MinMaxLabels({ data }: AxesProps) {
       </LabelWithSubscript>
 
       <LabelWithSubscript
+        startTransition={startTransition}
         x={xScale(-2)}
         y={yScale(minY)}
         alignmentBaseline="middle"
@@ -482,6 +521,7 @@ function MinMaxLabels({ data }: AxesProps) {
         min Y
       </LabelWithSubscript>
       <LabelWithSubscript
+        startTransition={startTransition}
         x={xScale(-2)}
         y={yScale(maxY)}
         alignmentBaseline="middle"
@@ -493,13 +533,18 @@ function MinMaxLabels({ data }: AxesProps) {
   )
 }
 
+type MinMaxLinesProps = { data: Coordinates[] } & ReturnType<
+  typeof getExtents
+> &
+  Pick<AxesProps, 'startTransition'>
 function MinMaxLines({
+  startTransition,
   data,
   minX,
   minY,
   maxX,
   maxY,
-}: { data: Coordinates[] } & ReturnType<typeof getExtents>) {
+}: MinMaxLinesProps) {
   const frame = useCurrentFrame()
   let minXPoint
   let maxXPoint
@@ -524,12 +569,12 @@ function MinMaxLines({
   const interpolateXLines = ([x, y]: Coordinates) =>
     line([
       [x, 0],
-      [x, interpolateAttribute(frame, [0, y])],
+      [x, interpolateAttribute(frame, startTransition, [0, y])],
     ])
   const interpolateYLines = ([x, y]: Coordinates) =>
     line([
       [0, y],
-      [interpolateAttribute(frame, [0, x]), y],
+      [interpolateAttribute(frame, startTransition, [0, x]), y],
     ])
 
   const minXLine = interpolateXLines(minXPoint)
@@ -554,13 +599,19 @@ function DashedLine(props: React.ComponentPropsWithoutRef<'path'>) {
   return <path strokeWidth={1} strokeDasharray="7 3" {...props} />
 }
 
-function Label(props: React.ComponentPropsWithoutRef<'text'>) {
+type LabelProps = Pick<AxesProps, 'startTransition'> &
+  React.ComponentPropsWithoutRef<'text'>
+function Label({ startTransition, ...props }: LabelProps) {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig()
   const fadeOutStart = durationInFrames - transitionDuration
   const opacity =
     frame < fadeOutStart
-      ? interpolateAttribute(frame, [0, 1])
+      ? customInterpolate(
+          frame,
+          [startTransition, startTransition + transitionDuration],
+          [0, 1]
+        )
       : customInterpolate(frame, [fadeOutStart, durationInFrames], [1, 0])
 
   return (
@@ -575,13 +626,16 @@ function Label(props: React.ComponentPropsWithoutRef<'text'>) {
   )
 }
 
+type LabelWithSubscriptProps = React.ComponentPropsWithoutRef<'text'> & {
+  subscript?: string
+} & Pick<AxesProps, 'startTransition'>
 function LabelWithSubscript({
   subscript = 'i',
   children,
   x,
   y,
   ...props
-}: React.ComponentPropsWithoutRef<'text'> & { subscript?: string }) {
+}: LabelWithSubscriptProps) {
   return (
     <Label x={x} y={y} {...props}>
       {children}
@@ -594,11 +648,15 @@ function LabelWithSubscript({
 
 // logic/hooks
 
-function useMergeTicks(ticks1: string[], ticks2: string[]) {
+function useMergeTicks(
+  startTransition: number,
+  ticks1: string[],
+  ticks2: string[]
+) {
   const frame = useCurrentFrame()
 
-  const opacityIn = interpolateAttribute(frame, [0, 1])
-  const opacityOut = interpolateAttribute(frame, [1, 0])
+  const opacityIn = interpolateAttribute(frame, startTransition, [0, 1])
+  const opacityOut = interpolateAttribute(frame, startTransition, [1, 0])
 
   return (
     ticks1
@@ -615,7 +673,11 @@ function useMergeTicks(ticks1: string[], ticks2: string[]) {
   )
 }
 
-function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
+function useMergeScatterplotPoints(
+  startTransition: number,
+  data1: Dataset,
+  data2?: Dataset
+) {
   const frame = useCurrentFrame()
 
   // if there is no data2, only use data1
@@ -623,8 +685,8 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
     return data1.map(([x, y]) => ({ cx: x, cy: y, opacity: 1 }))
   }
 
-  const opacityIn = interpolateAttribute(frame, [0, 1])
-  const opacityOut = interpolateAttribute(frame, [1, 0])
+  const opacityIn = interpolateAttribute(frame, startTransition, [0, 1])
+  const opacityOut = interpolateAttribute(frame, startTransition, [1, 0])
 
   return (
     data1
@@ -637,8 +699,8 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
         const [x2, y2] = coordinates2
         // reposition points with the same index
         return {
-          cx: interpolateAttribute(frame, [x1, x2]),
-          cy: interpolateAttribute(frame, [y1, y2]),
+          cx: interpolateAttribute(frame, startTransition, [x1, x2]),
+          cy: interpolateAttribute(frame, startTransition, [y1, y2]),
           opacity: 1,
         }
       })
@@ -657,8 +719,16 @@ function useMergeScatterplotPoints(data1: Dataset, data2?: Dataset) {
  * @param range
  * @returns
  */
-function interpolateAttribute(frame: number, range: Coordinates) {
-  return customInterpolate(frame, [transitionStart, transitionEnd], range)
+function interpolateAttribute(
+  frame: number,
+  startTransition: number,
+  range: Coordinates
+) {
+  return customInterpolate(
+    frame,
+    [startTransition, startTransition + transitionDuration],
+    range
+  )
 }
 
 function getExtents(data: Dataset) {
