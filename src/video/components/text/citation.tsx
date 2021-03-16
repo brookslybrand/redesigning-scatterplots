@@ -7,7 +7,7 @@ export default function Citation() {
   return (
     <footer
       css={[
-        tw`absolute text-xl font-light text-gray-900 bottom-4 left-4 font-body`,
+        tw`absolute text-2xl font-light text-gray-900 bottom-4 left-4 font-body`,
         css`
           opacity: ${opacity};
         `,

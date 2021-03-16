@@ -55,14 +55,14 @@ function DataInkTextSequence() {
           {dataInkTitle}
         </Title>
         <CustomSequence
-          from={40}
-          durationInFrames={dataInkText.duration - 40}
+          from={dataInkText.startTransition}
+          durationInFrames={dataInkText.duration - dataInkText.startTransition}
           name="data-ink text"
         >
           <ParagraphContainer>
             <Paragraph>
               {dataInkText.text}
-              <CustomSequence from={250} name="data ink ratio formula">
+              <CustomSequence from={200} name="data ink ratio formula">
                 <DataInkRatioFormula />
               </CustomSequence>
             </Paragraph>
@@ -74,30 +74,33 @@ function DataInkTextSequence() {
 }
 
 // calculate when the paragraphs start and how long they will be
-const titleDuration = 150
+const titleDuration = 90
 const textOverlap = 20
 let previousEnd = 21
 const scatterplotTextSequenceProps = scatterPlotText.map(
-  ({ text, duration }, idx) => {
-    const durationInFrames = duration
+  ({ text, startTransition, duration }, idx) => {
     const from = previousEnd - textOverlap
-    previousEnd = from + durationInFrames
+    previousEnd = from + duration
     return {
       text,
       from,
-      durationInFrames,
+      startTransition,
+      durationInFrames: duration,
       name: `redesigning scatterplots text ${idx + 1}`,
     }
   }
 )
 
 function RedesigningScatterplotsSequence() {
+  const firstTextSequenceProps = scatterplotTextSequenceProps[0]
   return (
     <>
       {/* title sequence */}
       <CustomSequence
         from={dataInkText.duration}
-        durationInFrames={titleDuration}
+        durationInFrames={
+          titleDuration + firstTextSequenceProps.durationInFrames
+        }
         name="redesigning scatterplots title"
       >
         <Container>
@@ -105,7 +108,7 @@ function RedesigningScatterplotsSequence() {
         </Container>
       </CustomSequence>
       <CustomSequence
-        from={dataInkText.duration + titleDuration - 30}
+        from={dataInkText.duration + titleDuration}
         name="scatterplot and text"
       >
         <Container>
@@ -128,14 +131,17 @@ function RedesigningScatterplotsSequence() {
             {/* initial plot */}
             <CustomSequence
               from={0}
-              durationInFrames={scatterplotTextSequenceProps[0].from}
+              durationInFrames={firstTextSequenceProps.from}
             >
               <AxesFull />
-              <ScatterplotPoints data1={dataset1} />
+              <ScatterplotPoints
+                startTransition={firstTextSequenceProps.startTransition}
+                data1={dataset1}
+              />
             </CustomSequence>
 
             {scatterplotTextSequenceProps.map(
-              ({ from, durationInFrames }, idx) => {
+              ({ from, startTransition, durationInFrames }, idx) => {
                 const name = `plot ${idx}`
                 return (
                   <CustomSequence
@@ -145,7 +151,10 @@ function RedesigningScatterplotsSequence() {
                     durationInFrames={durationInFrames - textOverlap}
                     name={name}
                   >
-                    <ScatterPlotElements paragraphNumber={idx} />
+                    <ScatterPlotElements
+                      startTransition={startTransition}
+                      paragraphNumber={idx}
+                    />
                   </CustomSequence>
                 )
               }
@@ -157,30 +166,46 @@ function RedesigningScatterplotsSequence() {
   )
 }
 
-function ScatterPlotElements({ paragraphNumber }: { paragraphNumber: number }) {
+type ScatterPlotElementsProps = {
+  startTransition: number
+  paragraphNumber: number
+}
+function ScatterPlotElements({
+  startTransition,
+  paragraphNumber,
+}: ScatterPlotElementsProps) {
   switch (paragraphNumber) {
     case 0: {
       return (
         <>
           <AxesFull />
-          <ScatterplotPoints data1={dataset1} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset1}
+          />
         </>
       )
     }
     case 1: {
       return (
         <>
-          <AxesFullToRange data={dataset1} />
-          <ScatterplotPoints data1={dataset1} />
+          <AxesFullToRange startTransition={startTransition} data={dataset1} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset1}
+          />
         </>
       )
     }
     case 2: {
       return (
         <>
-          <AxesRange data={dataset1} />
-          <ScatterplotPoints data1={dataset1} />
-          <MinMaxLabels data={dataset1} />
+          <AxesRange startTransition={startTransition} data={dataset1} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset1}
+          />
+          <MinMaxLabels startTransition={startTransition} data={dataset1} />
         </>
       )
     }
@@ -188,20 +213,29 @@ function ScatterPlotElements({ paragraphNumber }: { paragraphNumber: number }) {
       return (
         <>
           {/* use dataset 1 here for the axes so the transition is right */}
-          <AxesRangeToFull data={dataset1} />
-          <ScatterplotPoints data1={dataset1} data2={dataset2} />
-          <TicksFadeIn />
-          <PlotLabel>Conventional Scatterplot</PlotLabel>
+          <AxesRangeToFull startTransition={startTransition} data={dataset1} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset1}
+            data2={dataset2}
+          />
+          <TicksFadeIn startTransition={startTransition} />
+          <PlotLabel startTransition={startTransition}>
+            Conventional Scatterplot
+          </PlotLabel>
         </>
       )
     }
     case 4: {
       return (
         <>
-          <AxesFullToRange data={dataset2} />
-          <ScatterplotPoints data1={dataset2} />
-          <TicksToRange data={dataset2} />
-          <PlotLabel>Range-Frame</PlotLabel>
+          <AxesFullToRange startTransition={startTransition} data={dataset2} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset2}
+          />
+          <TicksToRange startTransition={startTransition} data={dataset2} />
+          <PlotLabel startTransition={startTransition}>Range-Frame</PlotLabel>
         </>
       )
     }
@@ -209,8 +243,16 @@ function ScatterPlotElements({ paragraphNumber }: { paragraphNumber: number }) {
       return (
         <>
           {/* TODO: add transition for axes range */}
-          <AxesRangeToQuartile data1={dataset2} data2={dataset3} />
-          <ScatterplotPoints data1={dataset2} data2={dataset3} />
+          <AxesRangeToQuartile
+            startTransition={startTransition}
+            data1={dataset2}
+            data2={dataset3}
+          />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset2}
+            data2={dataset3}
+          />
           {/* this is still dataset 2 since that's what it was in the previous sequence */}
           <TicksFadeOut data={dataset2} />
         </>
@@ -219,8 +261,11 @@ function ScatterPlotElements({ paragraphNumber }: { paragraphNumber: number }) {
     case 6: {
       return (
         <>
-          <AxesQuartile data={dataset3} />
-          <ScatterplotPoints data1={dataset3} />
+          <AxesQuartile startTransition={startTransition} data={dataset3} />
+          <ScatterplotPoints
+            startTransition={startTransition}
+            data1={dataset3}
+          />
         </>
       )
     }
@@ -249,8 +294,8 @@ function ParagraphContainer(props: React.ComponentPropsWithoutRef<'div'>) {
         tw`relative mt-16 left-1/2`,
         css`
           transform: translateX(-50%);
-          width: 750px;
-          height: 270px; /* hardcoded after inspecting */
+          width: 850px;
+          height: 250px; /* hardcoded after inspecting */
         `,
       ]}
       {...props}

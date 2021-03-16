@@ -19,7 +19,7 @@ export default function Paragraph({
   return (
     <p
       css={[
-        tw`absolute text-2xl font-light text-gray-900 font-body`,
+        tw`absolute text-4xl font-light leading-snug text-gray-900 font-body`,
         css`
           opacity: ${opacity};
 

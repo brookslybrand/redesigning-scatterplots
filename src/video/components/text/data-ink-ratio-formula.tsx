@@ -12,16 +12,16 @@ export default function DataInkRatioFormula() {
         <span tw="border-t-2 border-gray-red-400 w-full" />
         <span>total ink used to print the graphic</span>
       </DataInkRatioExplanation>
-      <CustomSequence from={90} name="formula 2">
+      <CustomSequence from={120} name="formula 2">
         <DataInkRatioExplanation tw="flex flex-col items-center">
           proportion of graphic's ink devoted to the non-redundant display of
           data-information
         </DataInkRatioExplanation>
       </CustomSequence>
-      <CustomSequence from={180} name="formula 3">
+      <CustomSequence from={240} name="formula 3">
         <DataInkRatioExplanation tw="flex flex-col items-center">
           1.0 - proportion of a graphic that can be erased without loss of
-          data-information.
+          data-information
         </DataInkRatioExplanation>
       </CustomSequence>
     </DataInkRatioFormulaGrid>
@@ -41,7 +41,7 @@ function DataInkRatioFormulaGrid({
   return (
     <span
       css={[
-        tw`grid items-center gap-x-4 gap-y-4`,
+        tw`grid items-center mt-8 gap-x-4 gap-y-12`,
         css`
           opacity: ${opacity};
           grid-template-columns: min-content min-content auto;
